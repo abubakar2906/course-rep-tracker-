@@ -7,29 +7,11 @@ import { Card } from "@/components/ui/card"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
-type Student = {
-  id: number
-  name: string
-  matricNumber: string
-  department: string
-  level: string
-  gender: "male" | "female"
-}
+import type { Student } from "@/types/student"
+import { mockStudents } from "@/types/mockData"
 
-// Mock student data - replace with your data fetching logic
 const getStudent = (id: number): Student | undefined => {
-  const students: Student[] = [
-    {
-      id: 1,
-      name: "John Smith",
-      matricNumber: "CSC/2020/001",
-      department: "Computer Science",
-      level: "200",
-      gender: "male",
-    },
-    // ... other student data
-  ]
-  return students.find(student => student.id === id)
+  return mockStudents.find(student => student.id === id)
 }
 
 export default function StudentProfilePage({ params }: { params: Promise<{ id: string }> }) {

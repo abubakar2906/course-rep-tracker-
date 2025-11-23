@@ -3,14 +3,16 @@ import { useState } from "react";
 import type React from "react";
 import { Sidebar } from "@/components/sidebar"; // Correct named import
 import Navbar from "@/components/navbar"; // Assuming Navbar is a default export
+import { UserProvider, useUser } from "@/contexts/UserContext";
 
-export default function DashboardLayout({
+function DashboardContent({
   children,
 }: {
   children: React.ReactNode
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useUser();
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,12 +30,24 @@ export default function DashboardLayout({
           ${isCollapsed ? "md:ml-16" : "md:ml-64"}`}
       >
         <Navbar 
-          username="Sarah" 
+          username={user.firstName} 
           setIsMobileMenuOpen={setIsMobileMenuOpen}
           isMobileMenuOpen={isMobileMenuOpen}
         />
         <main className="p-4 md:p-6 flex-1">{children}</main>
       </div>
     </div>
+  )
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <UserProvider>
+      <DashboardContent>{children}</DashboardContent>
+    </UserProvider>
   )
 }

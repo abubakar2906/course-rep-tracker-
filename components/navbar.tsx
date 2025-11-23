@@ -38,14 +38,18 @@ export default function Navbar({ username, isMobileMenuOpen, setIsMobileMenuOpen
             <Bell className="h-5 w-5" />
           </Button>
           
-          <Link href="/dashboard/profile">
-            <Button variant="ghost" className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            className="flex items-center gap-2" 
+            asChild
+          >
+            <Link href="/dashboard/profile">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <User className="h-4 w-4 text-primary" />
               </div>
               <span className="hidden sm:inline-block">{username}</span>
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
     </header>

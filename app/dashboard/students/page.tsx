@@ -6,7 +6,7 @@ import { Search, ChevronRight, User, UserRound, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AddStudentModal } from "@/components/modals/add-student-modal"
 import type { Student } from "@/types/student"
-import { mockStudents } from "@/types/student"
+import { mockStudents } from "@/types/mockData"
 
 interface StudentCardProps {
   student: Student

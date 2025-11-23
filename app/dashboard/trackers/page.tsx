@@ -1,7 +1,14 @@
 import Link from "next/link"
 import { Users, FileText, BarChart, Plus, ChevronRight } from "lucide-react"
+import { mockStudents } from "@/types/mockData"
 
-// Mock tracker data
+// Helper function to calculate percentage ensuring correlation
+function calculatePercentage(completed: number, total: number): number {
+	if (total === 0) return 0
+	return Math.round((completed / total) * 100)
+}
+
+// Mock tracker data - using mockStudents.length for consistency with detail page
 const trackers = [
 	{
 		id: "attendance",
@@ -10,9 +17,8 @@ const trackers = [
 		icon: Users,
 		color: "blue",
 		stats: {
-			total: 120,
-			completed: 98,
-			percentage: 82,
+			total: mockStudents.length,
+			completed: 0, // Starts at 0, matches detail page initial state
 		},
 	},
 	{
@@ -22,9 +28,8 @@ const trackers = [
 		icon: FileText,
 		color: "green",
 		stats: {
-			total: 120,
-			completed: 78,
-			percentage: 65,
+			total: mockStudents.length,
+			completed: 0, // Starts at 0, matches detail page initial state
 		},
 	},
 ]
@@ -63,23 +68,34 @@ export default function TrackersPage() {
 							</p>
 						</div>
 
-						<div className="p-4">
-							<div className="mb-2 flex items-center justify-between">
-								<span className="text-sm text-muted-foreground">
-									Completion
-								</span>
-								<span className="text-sm font-medium">
-									{tracker.stats.percentage}%
-								</span>
-							</div>
-							<div className="h-2 rounded-full bg-secondary overflow-hidden w-full">
-								<div
-									className={`h-full bg-primary`}
-									style={{
-										width: `${tracker.stats.percentage}%`,
-									}}
-								></div>
-							</div>
+					<div className="p-4">
+						{(() => {
+							// Calculate percentage dynamically to ensure it always matches the ratio
+							const percentage = calculatePercentage(
+								tracker.stats.completed,
+								tracker.stats.total
+							)
+							return (
+								<>
+									<div className="mb-2 flex items-center justify-between">
+										<span className="text-sm text-muted-foreground">
+											Completion
+										</span>
+										<span className="text-sm font-medium">
+											{percentage}%
+										</span>
+									</div>
+									<div className="h-2 rounded-full bg-secondary overflow-hidden w-full">
+										<div
+											className={`h-full bg-primary`}
+											style={{
+												width: `${percentage}%`,
+											}}
+										></div>
+									</div>
+								</>
+							)
+						})()}
 
 							<div className="mt-4 flex items-center justify-between">
 								<div className="text-sm text-muted-foreground">

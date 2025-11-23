@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { AlertCircle } from "lucide-react"
 
 export default function RegisterPage() {
   return (
@@ -17,7 +18,18 @@ export default function RegisterPage() {
             <p className="text-muted-foreground">Register as a course representative</p>
           </div>
 
-          <form className="space-y-4">
+          {/* Coming Soon Banner */}
+          <div className="mb-6 p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-800 rounded-lg flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Coming Soon</p>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                Registration is not yet implemented. Click below to access the dashboard for demo purposes.
+              </p>
+            </div>
+          </div>
+
+          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label htmlFor="firstName" className="text-sm font-medium text-foreground">
@@ -27,7 +39,8 @@ export default function RegisterPage() {
                   id="firstName"
                   type="text"
                   placeholder="John"
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
+                  disabled
+                  className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
                 />
               </div>
               <div className="space-y-2">
@@ -38,7 +51,8 @@ export default function RegisterPage() {
                   id="lastName"
                   type="text"
                   placeholder="Doe"
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
+                  disabled
+                  className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
                 />
               </div>
             </div>
@@ -51,7 +65,8 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 placeholder="your.email@university.edu"
-                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
+                disabled
+                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
               />
             </div>
 
@@ -63,7 +78,8 @@ export default function RegisterPage() {
                 id="department"
                 type="text"
                 placeholder="Computer Science"
-                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
+                disabled
+                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
               />
             </div>
 
@@ -75,7 +91,8 @@ export default function RegisterPage() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
+                disabled
+                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
               />
             </div>
 
@@ -87,7 +104,8 @@ export default function RegisterPage() {
                 id="confirmPassword"
                 type="password"
                 placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
+                disabled
+                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
               />
             </div>
 
@@ -95,11 +113,12 @@ export default function RegisterPage() {
               <input
                 id="terms"
                 type="checkbox"
-                className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
+                disabled
+                className="h-4 w-4 text-primary focus:ring-primary border-border rounded cursor-not-allowed opacity-60"
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-foreground">
                 I agree to the{" "}
-                <Link href="#" className="text-primary hover:underline">
+                <Link href="#" className="text-primary hover:underline pointer-events-none opacity-50">
                   Terms and Conditions
                 </Link>
               </label>
@@ -110,7 +129,7 @@ export default function RegisterPage() {
                 href="/dashboard"
                 className="w-full bg-primary text-primary-foreground font-medium py-3 rounded-lg flex items-center justify-center hover:bg-primary/90 transition"
               >
-                Create Account
+                Continue to Dashboard (Demo)
               </Link>
             </div>
           </form>
