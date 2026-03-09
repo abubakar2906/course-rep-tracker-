@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
 import type React from "react";
-import { Sidebar } from "@/components/sidebar"; // Correct named import
-import Navbar from "@/components/navbar"; // Assuming Navbar is a default export
-import { UserProvider, useUser } from "@/contexts/UserContext";
+import { Sidebar } from "@/components/sidebar";
+import Navbar from "@/components/navbar";
+import { useAuth } from "@/contexts/AuthContext";
 
 function DashboardContent({
   children,
@@ -12,11 +12,10 @@ function DashboardContent({
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user } = useUser();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Pass state and setter to Sidebar */}
       <Sidebar 
         isCollapsed={isCollapsed} 
         setIsCollapsed={setIsCollapsed}
@@ -24,13 +23,12 @@ function DashboardContent({
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
 
-      {/* Adjust margin based on sidebar state */}
       <div 
         className={`min-h-screen flex flex-col transition-all duration-300 ease-in-out
           ${isCollapsed ? "md:ml-16" : "md:ml-64"}`}
       >
         <Navbar 
-          username={user.firstName} 
+          username={user?.name?.split(' ')[0] || 'User'} 
           setIsMobileMenuOpen={setIsMobileMenuOpen}
           isMobileMenuOpen={isMobileMenuOpen}
         />
@@ -45,9 +43,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <UserProvider>
-      <DashboardContent>{children}</DashboardContent>
-    </UserProvider>
-  )
+  return <DashboardContent>{children}</DashboardContent>
 }

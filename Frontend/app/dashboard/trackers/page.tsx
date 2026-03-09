@@ -1,112 +1,238 @@
-import Link from "next/link"
-import { Users, FileText, BarChart, Plus, ChevronRight } from "lucide-react"
-import { mockStudents } from "@/types/mockData"
+"use client"
 
-// Helper function to calculate percentage ensuring correlation
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { Users, FileText, Plus, ChevronRight, ChevronDown } from "lucide-react"
+import { api } from "@/lib/api"
+
 function calculatePercentage(completed: number, total: number): number {
-	if (total === 0) return 0
-	return Math.round((completed / total) * 100)
+  if (total === 0) return 0
+  return Math.round((completed / total) * 100)
 }
 
-// Mock tracker data - using mockStudents.length for consistency with detail page
-const trackers = [
-	{
-		id: "attendance",
-		name: "Attendance Tracker",
-		description: "Track student attendance for classes and events",
-		icon: Users,
-		color: "blue",
-		stats: {
-			total: mockStudents.length,
-			completed: 0, // Starts at 0, matches detail page initial state
-		},
-	},
-	{
-		id: "assignments",
-		name: "Assignment Tracker",
-		description: "Monitor student assignments and submissions",
-		icon: FileText,
-		color: "green",
-		stats: {
-			total: mockStudents.length,
-			completed: 0, // Starts at 0, matches detail page initial state
-		},
-	},
-]
-
 export default function TrackersPage() {
-	return (
-		<div className="space-y-4 p-1">
-			<div className="flex items-center justify-between">
-				<h1 className="text-xl font-bold">Trackers</h1>
-				<Link
-					href="/dashboard/trackers/add"
-					className="flex items-center rounded-lg bg-yellow-300 px-4 py-2 text-gray-800 transition hover:bg-yellow-400"
-				>
-					<Plus className="mr-1" size={18} />
-					Add Tracker
-				</Link>
-			</div>
+  const [courses, setCourses] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [expandedCourses, setExpandedCourses] = useState<Set<string>>(new Set())
 
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-				{trackers.map((tracker) => (
-					<Link
-						key={tracker.id}
-						href={`/dashboard/trackers/${tracker.id}`}
-						className="group block overflow-hidden rounded-xl bg-card shadow-sm transition-shadow hover:shadow-md"
-					>
-						<div className={`border-b border-border bg-secondary p-4`}>
-							<div className="flex items-center justify-between">
-								<div className={`rounded-full bg-accent p-2`}>
-									<tracker.icon className={`text-foreground`} size={20} />
-								</div>
-								<BarChart className="text-muted-foreground" size={18} />
-							</div>
-							<h2 className="mt-3 text-lg font-medium">{tracker.name}</h2>
-							<p className="mt-1 text-sm text-muted-foreground">
-								{tracker.description}
-							</p>
-						</div>
+  useEffect(() => {
+    fetchCourses()
+  }, [])
 
-					<div className="p-4">
-						{(() => {
-							// Calculate percentage dynamically to ensure it always matches the ratio
-							const percentage = calculatePercentage(
-								tracker.stats.completed,
-								tracker.stats.total
-							)
-							return (
-								<>
-									<div className="mb-2 flex items-center justify-between">
-										<span className="text-sm text-muted-foreground">
-											Completion
-										</span>
-										<span className="text-sm font-medium">
-											{percentage}%
-										</span>
-									</div>
-									<div className="h-2 rounded-full bg-secondary overflow-hidden w-full">
-										<div
-											className={`h-full bg-primary`}
-											style={{
-												width: `${percentage}%`,
-											}}
-										></div>
-									</div>
-								</>
-							)
-						})()}
+  const fetchCourses = async () => {
+    try {
+      const result = await api.getCourses()
+      if (result.success) {
+        // Fetch trackers for each course
+        const coursesWithTrackers = await Promise.all(
+          result.data.map(async (course: any) => {
+            const courseDetail = await api.getCourse(course.id)
+            return courseDetail.success ? courseDetail.data : course
+          })
+        )
+        setCourses(coursesWithTrackers)
+        // Auto-expand all courses
+        setExpandedCourses(new Set(coursesWithTrackers.map(c => c.id)))
+      }
+    } catch (error) {
+      console.error('Failed to fetch courses:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-							<div className="mt-4 flex items-center justify-between">
-								<div className="text-sm text-muted-foreground">
-									{`${tracker.stats.completed} / ${tracker.stats.total} students`}
-								</div>
-								<ChevronRight className="text-muted-foreground" size={16} />
-							</div>
-						</div>
-					</Link>
-				))}
-			</div>
-		</div>
-	)
+  const toggleCourse = (courseId: string) => {
+    setExpandedCourses(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(courseId)) {
+        newSet.delete(courseId)
+      } else {
+        newSet.add(courseId)
+      }
+      return newSet
+    })
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Loading trackers...</p>
+      </div>
+    )
+  }
+
+  if (courses.length === 0) {
+    return (
+      <div className="space-y-4 p-1">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold">Trackers</h1>
+        </div>
+        <div className="text-center py-12 bg-card rounded-xl shadow-sm">
+          <p className="text-muted-foreground mb-4">No courses yet. Create a course first!</p>
+          <Link
+            href="/dashboard/courses/add"
+            className="inline-flex items-center rounded-lg bg-yellow-300 px-4 py-2 text-gray-800 transition hover:bg-yellow-400"
+          >
+            <Plus className="mr-1" size={18} />
+            Add Course
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4 p-1">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Trackers by Course</h1>
+        <Link
+          href="/dashboard/courses"
+          className="text-sm text-primary hover:underline"
+        >
+          Manage Courses
+        </Link>
+      </div>
+
+      <div className="space-y-4">
+        {courses.map((course) => {
+          const isExpanded = expandedCourses.has(course.id)
+          const trackers = course.trackers || []
+          const attendanceTrackers = trackers.filter((t: any) => t.type === 'ATTENDANCE')
+          const assignmentTrackers = trackers.filter((t: any) => t.type === 'ASSIGNMENT')
+
+          return (
+            <div key={course.id} className="bg-card rounded-xl shadow-sm overflow-hidden">
+              {/* Course Header */}
+              <button
+                onClick={() => toggleCourse(course.id)}
+                className="w-full p-4 flex items-center justify-between hover:bg-secondary transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  {isExpanded ? (
+                    <ChevronDown className="text-muted-foreground" size={20} />
+                  ) : (
+                    <ChevronRight className="text-muted-foreground" size={20} />
+                  )}
+                  <div className="text-left">
+                    <h2 className="font-semibold text-foreground">
+                      {course.code} - {course.name}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {trackers.length} tracker{trackers.length !== 1 ? 's' : ''}
+                      {course.semester && ` • ${course.semester}`}
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={`/dashboard/trackers/add?courseId=${course.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center rounded-lg bg-yellow-300 px-3 py-1.5 text-sm text-gray-800 transition hover:bg-yellow-400"
+                >
+                  <Plus size={16} className="mr-1" />
+                  Add Tracker
+                </Link>
+              </button>
+
+              {/* Trackers List */}
+              {isExpanded && (
+                <div className="border-t border-border p-4 space-y-4">
+                  {trackers.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No trackers yet. Click "Add Tracker" to create one.
+                    </p>
+                  ) : (
+                    <>
+                      {/* Attendance Section */}
+                      {attendanceTrackers.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                            <Users size={16} />
+                            Attendance ({attendanceTrackers.length})
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {attendanceTrackers.map((tracker: any) => {
+                              const recordsCount = tracker._count?.records || 0
+                              const completedCount = tracker.records?.filter((r: any) => 
+                                r.status === 'PRESENT'
+                              ).length || 0
+                              const percentage = calculatePercentage(completedCount, recordsCount)
+
+                              return (
+                                <Link
+                                  key={tracker.id}
+                                  href={`/dashboard/trackers/${tracker.id}`}
+                                  className="block p-3 bg-secondary rounded-lg hover:bg-accent transition-colors"
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                    <p className="font-medium">{tracker.name}</p>
+                                    <ChevronRight size={16} className="text-muted-foreground" />
+                                  </div>
+                                  <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+                                    <span>{completedCount} / {recordsCount} present</span>
+                                    <span>{percentage}%</span>
+                                  </div>
+                                  <div className="h-1.5 bg-background rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full bg-primary"
+                                      style={{ width: `${percentage}%` }}
+                                    />
+                                  </div>
+                                </Link>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Assignments Section */}
+                      {assignmentTrackers.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                            <FileText size={16} />
+                            Assignments ({assignmentTrackers.length})
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {assignmentTrackers.map((tracker: any) => {
+                              const recordsCount = tracker._count?.records || 0
+                              const completedCount = tracker.records?.filter((r: any) => 
+                                r.status === 'SUBMITTED'
+                              ).length || 0
+                              const percentage = calculatePercentage(completedCount, recordsCount)
+
+                              return (
+                                <Link
+                                  key={tracker.id}
+                                  href={`/dashboard/trackers/${tracker.id}`}
+                                  className="block p-3 bg-secondary rounded-lg hover:bg-accent transition-colors"
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                    <p className="font-medium">{tracker.name}</p>
+                                    <ChevronRight size={16} className="text-muted-foreground" />
+                                  </div>
+                                  <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+                                    <span>{completedCount} / {recordsCount} submitted</span>
+                                    <span>{percentage}%</span>
+                                  </div>
+                                  <div className="h-1.5 bg-background rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full bg-primary"
+                                      style={{ width: `${percentage}%` }}
+                                    />
+                                  </div>
+                                </Link>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }

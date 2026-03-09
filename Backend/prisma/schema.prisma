@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(cuid())
+  email      String    @unique
+  password   String?   // Optional for OAuth users
+  name       String
+  phone      String?   @unique
+  about      String?
+  department String
+  role       String
+  office     String?
+  googleId   String?   @unique // For Google OAuth
+  students   Student[]
+  trackers   Tracker[]
+  courses    Course[]   // ADD THIS LINE
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Student {
+  id           String          @id @default(cuid())
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName     String
+  matricNumber String          @unique
+  level        Level           // 100, 200, 300, 400, or 500
+  gender       Gender
+  records      TrackerRecord[] // Attendance/assignment records for this student
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model Course {
+  id        String    @id @default(cuid())
+  code      String    // CSC 101
+  name      String    // Introduction to Computer Science
+  semester  String?   // Fall 2024
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trackers  Tracker[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([userId, code]) // Same user can't have duplicate course codes
+}
+
+model Tracker {
+  id        String          @id @default(cuid())
+  name      String          // "Week 1 Lecture", "Assignment 1"
+  type      TrackerType     // ATTENDANCE or ASSIGNMENT
+  courseId  String          // NEW: Link to course
+  course    Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime        @default(now())
+  records   TrackerRecord[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model TrackerRecord {
+  id        String       @id @default(cuid())
+  trackerId String
+  tracker   Tracker      @relation(fields: [trackerId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status    RecordStatus // PRESENT, ABSENT, SUBMITTED, NOT_SUBMITTED
+  notes     String?      // Optional notes
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([trackerId, studentId]) // Each student appears once per tracker
+}
+
+enum Level {
+  LEVEL_100
+  LEVEL_200
+  LEVEL_300
+  LEVEL_400
+  LEVEL_500
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum TrackerType {
+  ATTENDANCE
+  ASSIGNMENT
+}
+
+enum RecordStatus {
+  PRESENT
+  ABSENT
+  LATE
+  SUBMITTED
+  NOT_SUBMITTED
+  PENDING
+}

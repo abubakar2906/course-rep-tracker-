@@ -6,41 +6,82 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { useUser } from "@/contexts/UserContext"
-import type { User } from "@/types/user"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function ProfilePage() {
-  const { user: profileData, updateUser } = useUser()
+  const { user, loading } = useAuth()
   const [isEditing, setIsEditing] = React.useState(false)
 
-  const [editedData, setEditedData] = React.useState<User>(profileData)
+  const [editedData, setEditedData] = React.useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    department: user?.department || '',
+    role: user?.role || '',
+    office: user?.office || '',
+    about: user?.about || '',
+  })
 
   React.useEffect(() => {
-    setEditedData(profileData)
-  }, [profileData])
+    if (user) {
+      setEditedData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        department: user.department || '',
+        role: user.role || '',
+        office: user.office || '',
+        about: user.about || '',
+      })
+    }
+  }, [user])
 
   const handleEdit = () => {
     setIsEditing(true)
-    setEditedData(profileData)
   }
 
   const handleCancel = () => {
     setIsEditing(false)
-    setEditedData(profileData)
+    if (user) {
+      setEditedData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        department: user.department || '',
+        role: user.role || '',
+        office: user.office || '',
+        about: user.about || '',
+      })
+    }
   }
 
   const handleSave = () => {
-    updateUser(editedData)
+    // TODO: Implement API call to update user profile
     setIsEditing(false)
-    // In a real app, this would save to the backend
-    alert("Profile updated successfully!")
+    alert("Profile updated! (API integration coming soon)")
   }
 
-  const handleChange = (field: keyof User, value: string) => {
+  const handleChange = (field: string, value: string) => {
     setEditedData((prev) => ({
       ...prev,
       [field]: value,
     }))
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Loading profile...</p>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Not logged in</p>
+      </div>
+    )
   }
 
   return (
@@ -77,23 +118,13 @@ export default function ProfilePage() {
 
             {isEditing ? (
               <div className="w-full max-w-md space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      value={editedData.firstName}
-                      onChange={(e) => handleChange("firstName", e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      value={editedData.lastName}
-                      onChange={(e) => handleChange("lastName", e.target.value)}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={editedData.name}
+                    onChange={(e) => handleChange("name", e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="department">Department</Label>
@@ -114,9 +145,9 @@ export default function ProfilePage() {
               </div>
             ) : (
               <>
-                <h2 className="text-2xl font-bold">{`${profileData.firstName} ${profileData.lastName}`}</h2>
-                <p className="text-muted-foreground">{profileData.role}</p>
-                <p className="text-sm text-muted-foreground mt-1">{profileData.department} Department</p>
+                <h2 className="text-2xl font-bold">{user.name}</h2>
+                <p className="text-muted-foreground">{user.role}</p>
+                <p className="text-sm text-muted-foreground mt-1">{user.department} Department</p>
               </>
             )}
           </div>
@@ -126,23 +157,10 @@ export default function ProfilePage() {
               <div className="p-2 bg-accent rounded-full mr-3">
                 <Mail size={18} className="text-foreground" />
               </div>
-              {isEditing ? (
-                <div className="flex-1">
-                  <Label htmlFor="email" className="text-sm text-muted-foreground">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={editedData.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-              ) : (
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{profileData.email}</p>
-                </div>
-              )}
+              <div>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="font-medium">{user.email}</p>
+              </div>
             </div>
 
             <div className="flex items-center">
@@ -163,7 +181,7 @@ export default function ProfilePage() {
               ) : (
                 <div>
                   <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="font-medium">{profileData.phone}</p>
+                  <p className="font-medium">{user.phone || 'Not set'}</p>
                 </div>
               )}
             </div>
@@ -185,7 +203,7 @@ export default function ProfilePage() {
               ) : (
                 <div>
                   <p className="text-sm text-muted-foreground">Office</p>
-                  <p className="font-medium">{profileData.office}</p>
+                  <p className="font-medium">{user.office || 'Not set'}</p>
                 </div>
               )}
             </div>
@@ -202,7 +220,7 @@ export default function ProfilePage() {
                 className="resize-none"
               />
             ) : (
-              <p className="text-muted-foreground">{profileData.about}</p>
+              <p className="text-muted-foreground">{user.about || 'No description yet.'}</p>
             )}
           </div>
         </div>

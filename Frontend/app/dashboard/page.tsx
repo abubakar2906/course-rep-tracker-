@@ -1,4 +1,7 @@
+'use client';
+
 import * as React from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   ArrowRight,
@@ -6,6 +9,9 @@ import {
   FileText,
 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+import { useAuth } from "@/contexts/AuthContext"
+import { api } from "@/lib/api"
+import OnboardingModal from "@/components/OnboardingModal"
 
 // --- Data Types ---
 type SummaryCardProps = {
@@ -29,53 +35,6 @@ type ActivityItemProps = {
   timestamp: string
   avatarColor?: string
 }
-
-// --- Mock Data ---
-const summaryCardsData: SummaryCardProps[] = [
-  {
-    title: "Attendance",
-    value: "87%",
-    description: "Average attendance",
-    icon: Users,
-    iconBgColor: "bg-blue-100 dark:bg-blue-900",
-    barPercentage: 87,
-    barColor: "bg-blue-500",
-    link: "/dashboard/trackers/attendance",
-    linkText: "View Attendance",
-  },
-  {
-    title: "Assignments",
-    value: "12",
-    description: "Active assignments",
-    icon: FileText,
-    iconBgColor: "bg-green-100 dark:bg-green-900",
-    barPercentage: 75,
-    barColor: "bg-green-500",
-    link: "/dashboard/trackers/assignments",
-    linkText: "View Assignments",
-  },
-]
-
-const recentActivityData: ActivityItemProps[] = [
-  {
-    id: "1",
-    userInitials: "SJ",
-    userName: "Sarah Johnson",
-    action: "updated attendance for",
-    target: "CSC 101",
-    timestamp: "15 mins ago",
-    avatarColor: "bg-primary",
-  },
-  {
-    id: "2",
-    userInitials: "SJ",
-    userName: "Sarah Johnson",
-    action: "added new assignment for",
-    target: "CSC 101",
-    timestamp: "1 hour ago",
-    avatarColor: "bg-primary",
-  },
-]
 
 // --- Sub-Components ---
 const DashboardSummaryCard: React.FC<SummaryCardProps> = ({
@@ -154,29 +113,119 @@ const DashboardSection: React.FC<{ title: string; children: React.ReactNode; cla
 
 // --- Main Dashboard Page Component ---
 export default function DashboardPage() {
-  return (
-    <div className="space-y-6">
-      {/* Summary Cards Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-        {summaryCardsData.map((card) => (
-          <DashboardSummaryCard key={card.title} {...card} />
-        ))}
-      </div>
+  const { user } = useAuth();
+  const [students, setStudents] = useState([]);
+  const [trackers, setTrackers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
-      {/* Recent Activity Section */}
-      <DashboardSection title="Recent Activity">
-        <div className="space-y-1">
-          {recentActivityData.map((activity, index) => (
-            <React.Fragment key={activity.id}>
-              <ActivityItem {...activity} />
-              {index < recentActivityData.length - 1 && <Separator />}
-            </React.Fragment>
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [studentsRes, trackersRes] = await Promise.all([
+        api.getStudents(),
+        api.getTrackers(),
+      ]);
+
+      if (studentsRes.success) {
+        setStudents(studentsRes.data);
+        if (studentsRes.data.length === 0) {
+          setShowOnboarding(true);
+        }
+      }
+
+      if (trackersRes.success) {
+        setTrackers(trackersRes.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    fetchData(); // Refresh data
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  // Calculate real stats
+  const attendanceTrackers = trackers.filter((t: any) => t.type === 'ATTENDANCE');
+  const assignmentTrackers = trackers.filter((t: any) => t.type === 'ASSIGNMENT');
+
+  const summaryCardsData: SummaryCardProps[] = [
+    {
+      title: "Students",
+      value: students.length.toString(),
+      description: "Total students",
+      icon: Users,
+      iconBgColor: "bg-blue-100 dark:bg-blue-900",
+      link: "/dashboard/students",
+      linkText: "Manage Students",
+    },
+    {
+      title: "Trackers",
+      value: trackers.length.toString(),
+      description: `${attendanceTrackers.length} attendance, ${assignmentTrackers.length} assignments`,
+      icon: FileText,
+      iconBgColor: "bg-green-100 dark:bg-green-900",
+      link: "/dashboard/trackers",
+      linkText: "View Trackers",
+    },
+  ];
+
+  // Recent activity from trackers (latest 5)
+  const recentActivityData: ActivityItemProps[] = trackers
+    .slice(0, 5)
+    .map((tracker: any) => ({
+      id: tracker.id,
+      userInitials: user?.name?.split(' ').map((n: string) => n[0]).join('') || 'U',
+      userName: user?.name || 'User',
+      action: `created ${tracker.type.toLowerCase()} tracker`,
+      target: tracker.name,
+      timestamp: new Date(tracker.createdAt).toLocaleDateString(),
+      avatarColor: "bg-primary",
+    }));
+
+  return (
+    <>
+      {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
+      
+      <div className="space-y-6">
+        {/* Summary Cards Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+          {summaryCardsData.map((card) => (
+            <DashboardSummaryCard key={card.title} {...card} />
           ))}
-          {recentActivityData.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
-          )}
         </div>
-      </DashboardSection>
-    </div>
+
+        {/* Recent Activity Section */}
+        <DashboardSection title="Recent Activity">
+          <div className="space-y-1">
+            {recentActivityData.length > 0 ? (
+              recentActivityData.map((activity, index) => (
+                <React.Fragment key={activity.id}>
+                  <ActivityItem {...activity} />
+                  {index < recentActivityData.length - 1 && <Separator />}
+                </React.Fragment>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
+            )}
+          </div>
+        </DashboardSection>
+      </div>
+    </>
   )
 }

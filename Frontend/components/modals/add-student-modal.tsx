@@ -7,43 +7,38 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import type { Student } from "@/types/student"
 
 interface AddStudentModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (student: Omit<Student, "id">) => void
+  onSubmit: (student: any) => void
 }
 
-const departments = [
-  "Computer Science",
-  "Electrical Engineering",
-  "Mechanical Engineering",
-  "Civil Engineering",
+const levels = [
+  { value: "LEVEL_100", label: "100" },
+  { value: "LEVEL_200", label: "200" },
+  { value: "LEVEL_300", label: "300" },
+  { value: "LEVEL_400", label: "400" },
+  { value: "LEVEL_500", label: "500" },
 ]
-
-const levels = ["100", "200", "300", "400", "500"]
 
 export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalProps) {
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     matricNumber: "",
-    department: "",
-    level: "",
-    gender: "",
+    level: "LEVEL_100",
+    gender: "MALE",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(formData as Omit<Student, "id">)
+    onSubmit(formData)
     setFormData({
-      name: "",
+      fullName: "",
       matricNumber: "",
-      department: "",
-      level: "",
-      gender: "",
+      level: "LEVEL_100",
+      gender: "MALE",
     })
-    onClose()
   }
 
   return (
@@ -54,11 +49,11 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="fullName">Full Name</Label>
             <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              id="fullName"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               required
             />
           </div>
@@ -69,28 +64,9 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
               id="matricNumber"
               value={formData.matricNumber}
               onChange={(e) => setFormData({ ...formData, matricNumber: e.target.value })}
+              placeholder="CSC/2021/001"
               required
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="department">Department</Label>
-            <Select
-              value={formData.department}
-              onValueChange={(value) => setFormData({ ...formData, department: value })}
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select department" />
-              </SelectTrigger>
-              <SelectContent>
-                {departments.map((dept) => (
-                  <SelectItem key={dept} value={dept}>
-                    {dept}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="space-y-2">
@@ -105,8 +81,8 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
               </SelectTrigger>
               <SelectContent>
                 {levels.map((level) => (
-                  <SelectItem key={level} value={level}>
-                    {level} Level
+                  <SelectItem key={level.value} value={level.value}>
+                    {level.label} Level
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -122,11 +98,11 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
               required
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="male" id="male" />
+                <RadioGroupItem value="MALE" id="male" />
                 <Label htmlFor="male">Male</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="female" id="female" />
+                <RadioGroupItem value="FEMALE" id="female" />
                 <Label htmlFor="female">Female</Label>
               </div>
             </RadioGroup>

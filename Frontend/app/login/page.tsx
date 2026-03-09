@@ -1,7 +1,16 @@
+'use client';
+
 import Link from "next/link"
-import { AlertCircle } from "lucide-react"
+import { Chrome } from "lucide-react"
 
 export default function LoginPage() {
+  const handleGoogleLogin = () => {
+    // Redirect to backend Google OAuth
+    window.location.href = 'http://localhost:5000/api/auth/google';
+  };
+
+  
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-background relative overflow-hidden">
       {/* Abstract background pattern */}
@@ -15,69 +24,21 @@ export default function LoginPage() {
         <div className="bg-card rounded-2xl shadow-lg p-8">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-foreground mb-2">Course Rep Tracker</h1>
-            <p className="text-muted-foreground">Sign in to your account</p>
+            <p className="text-muted-foreground">Sign in with your university account</p>
           </div>
 
-          {/* Coming Soon Banner */}
-          <div className="mb-6 p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-800 rounded-lg flex items-start gap-2">
-            <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Coming Soon</p>
-              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                Authentication is not yet implemented. Click below to access the dashboard for demo purposes.
-              </p>
-            </div>
-          </div>
+          <div className="space-y-4">
+            <button
+              onClick={handleGoogleLogin}
+              className="w-full bg-white hover:bg-gray-50 text-gray-900 font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-3 border border-gray-300 transition"
+            >
+              <Chrome className="h-5 w-5" />
+              Continue with Google
+            </button>
 
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-foreground">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="your.email@university.edu"
-                disabled
-                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
-              />
+            <div className="text-center text-sm text-muted-foreground">
+              Sign in with your university Gmail account
             </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <label htmlFor="password" className="text-sm font-medium text-foreground">
-                  Password
-                </label>
-                <Link href="#" className="text-sm text-primary hover:underline pointer-events-none opacity-50">
-                  Forgot password?
-                </Link>
-              </div>
-              <input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                disabled
-                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
-              />
-            </div>
-
-            <div>
-              <Link
-                href="/dashboard"
-                className="w-full bg-primary text-primary-foreground font-medium py-3 rounded-lg flex items-center justify-center hover:bg-primary/90 transition"
-              >
-                Continue to Dashboard (Demo)
-              </Link>
-            </div>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-muted-foreground text-sm">
-              Don't have an account?{" "}
-              <Link href="/register" className="text-primary hover:underline">
-                Register
-              </Link>
-            </p>
           </div>
         </div>
       </div>

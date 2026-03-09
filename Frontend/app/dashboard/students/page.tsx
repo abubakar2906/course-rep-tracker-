@@ -1,16 +1,23 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Search, ChevronRight, User, UserRound, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AddStudentModal } from "@/components/modals/add-student-modal"
-import type { Student } from "@/types/student"
-import { mockStudents } from "@/types/mockData"
+import { api } from "@/lib/api"
+
+interface Student {
+  id: string
+  fullName: string
+  matricNumber: string
+  level: string
+  gender: string
+}
 
 interface StudentCardProps {
   student: Student
-  onClick: (id: number) => void
+  onClick: (id: string) => void
 }
 
 const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) => {
@@ -20,7 +27,7 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) => {
       className="flex items-center p-4 hover:bg-secondary transition-colors duration-150 cursor-pointer"
     >
       <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-accent flex items-center justify-center shrink-0">
-        {student.gender === "male" ? (
+        {student.gender === "MALE" ? (
           <User size={20} className="text-foreground" />
         ) : (
           <UserRound size={20} className="text-foreground" />
@@ -28,13 +35,11 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) => {
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-foreground truncate">{student.name}</h3>
+        <h3 className="font-medium text-foreground truncate">{student.fullName}</h3>
         <div className="flex items-center text-sm text-muted-foreground flex-wrap">
           <span className="mr-2 whitespace-nowrap">{student.matricNumber}</span>
           <span className="w-1 h-1 bg-muted-foreground rounded-full mx-2 hidden sm:inline-block"></span>
-          <span className="mr-2 whitespace-nowrap truncate">{student.department}</span>
-          <span className="w-1 h-1 bg-muted-foreground rounded-full mx-2 hidden md:inline-block"></span>
-          <span className="ml-0 md:ml-2 whitespace-nowrap">{student.level} Level</span>
+          <span className="ml-0 md:ml-2 whitespace-nowrap">{student.level.replace('LEVEL_', '')} Level</span>
         </div>
       </div>
 
@@ -45,9 +50,27 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) => {
 
 export default function StudentsPage() {
   const router = useRouter()
-  const [students, setStudents] = useState<Student[]>(mockStudents)
+  const [students, setStudents] = useState<Student[]>([])
+  const [loading, setLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+
+  useEffect(() => {
+    fetchStudents()
+  }, [])
+
+  const fetchStudents = async () => {
+    try {
+      const result = await api.getStudents()
+      if (result.success) {
+        setStudents(result.data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch students:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredStudents = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -56,22 +79,33 @@ export default function StudentsPage() {
     const lowercasedSearchTerm = searchTerm.toLowerCase()
     return students.filter(
       (student) =>
-        student.name.toLowerCase().includes(lowercasedSearchTerm) ||
-        student.department.toLowerCase().includes(lowercasedSearchTerm) ||
+        student.fullName.toLowerCase().includes(lowercasedSearchTerm) ||
         student.matricNumber.toLowerCase().includes(lowercasedSearchTerm),
     )
   }, [searchTerm, students])
 
-  const handleAddStudent = (newStudent: Omit<Student, "id">) => {
-    const student = {
-      ...newStudent,
-      id: students.length + 1,
+  const handleAddStudent = async (newStudent: any) => {
+    try {
+      const result = await api.createStudent(newStudent)
+      if (result.success) {
+        setStudents([...students, result.data])
+        setIsAddModalOpen(false)
+      }
+    } catch (error) {
+      alert('Failed to add student')
     }
-    setStudents([...students, student])
   }
 
-  const handleStudentClick = (id: number) => {
+  const handleStudentClick = (id: string) => {
     router.push(`/dashboard/students/${id}`)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Loading students...</p>
+      </div>
+    )
   }
 
   return (
@@ -93,7 +127,7 @@ export default function StudentsPage() {
         </div>
         <input
           type="text"
-          placeholder="Search students by name, ID or department..."
+          placeholder="Search students by name or matric number..."
           className="w-full pl-10 pr-4 py-3 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}

@@ -7,12 +7,11 @@ import {
   LayoutDashboard,
   Users,
   ListChecks,
-  FileText,
-  User2, // Add this
+  BookOpen,
+  User2,
   ChevronLeft,
   ChevronRight,
   BookOpenCheck,
-  LogOut,
   X,
 } from "lucide-react"
 
@@ -37,13 +36,12 @@ interface NavItemProps {
 const mainNavItems: NavItemProps[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/dashboard/students", icon: Users, label: "Students" },
+  { href: "/dashboard/courses", icon: BookOpen, label: "Courses" },
   { href: "/dashboard/trackers", icon: ListChecks, label: "Trackers" },
 ]
 
 const secondaryNavItems: NavItemProps[] = [
   { href: "/dashboard/profile", icon: User2, label: "Profile" },
-  // Add a logout link/button if appropriate for your auth flow
-  // { href: "/logout", icon: LogOut, label: "Logout" },
 ]
 
 interface SidebarProps {
@@ -82,28 +80,25 @@ export function Sidebar({
         <aside
           className={cn(
             "fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r bg-background transition-all duration-300 ease-in-out",
-            isCollapsed ? "w-16" : "w-64", // Collapsed and expanded widths
-            "hidden md:flex", // Hide on mobile by default, show on md and up
+            isCollapsed ? "w-16" : "w-64",
+            "hidden md:flex",
             className
           )}
         >
-          {/* Logo and App Name */}
-          <div
-            className={cn(
-              "flex h-16 items-center border-b px-4",
-              isCollapsed ? "justify-between" : "justify-between" // Changed from justify-center/start
-            )}
-          >
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <BookOpenCheck className="h-6 w-6 text-primary" />
-              {!isCollapsed && (
+          {/* Header with collapse button */}
+          <div className={cn(
+            "flex h-16 items-center border-b px-4",
+            isCollapsed ? "justify-center" : "justify-between"
+          )}>
+            {!isCollapsed && (
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <BookOpenCheck className="h-6 w-6 text-primary" />
                 <span className="text-lg font-semibold text-foreground">
                   CourseRep
                 </span>
-              )}
-            </Link>
+              </Link>
+            )}
             
-            {/* Moved collapse button here */}
             <Button
               variant="ghost"
               size="icon"
@@ -131,7 +126,7 @@ export function Sidebar({
             ))}
           </nav>
 
-          {/* Secondary Navigation - Remove the collapse button from here */}
+          {/* Secondary Navigation */}
           <div className="mt-auto border-t p-2">
             <nav className="space-y-1">
               {secondaryNavItems.map((item) => (
@@ -151,7 +146,7 @@ export function Sidebar({
           className={cn(
             "fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col border-r bg-background transition-all duration-300 ease-in-out transform",
             isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
-            "md:hidden" // Only show on mobile
+            "md:hidden"
           )}
         >
           {/* Mobile sidebar header with close button */}
