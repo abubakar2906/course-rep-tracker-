@@ -5,9 +5,11 @@ import Link from "next/link"
 import { Users, FileText, Plus, ChevronRight, ChevronDown } from "lucide-react"
 import { api } from "@/lib/api"
 
-function calculatePercentage(completed: number, total: number): number {
-  if (total === 0) return 0
-  return Math.round((completed / total) * 100)
+function calculatePercentage(records: any[], status: string): { completed: number; total: number; percentage: number } {
+  const total = records.length
+  const completed = records.filter((r: any) => r.status === status).length
+  const percentage = total === 0 ? 0 : Math.round((completed / total) * 100)
+  return { completed, total, percentage }
 }
 
 export default function TrackersPage() {
@@ -23,16 +25,8 @@ export default function TrackersPage() {
     try {
       const result = await api.getCourses()
       if (result.success) {
-        // Fetch trackers for each course
-        const coursesWithTrackers = await Promise.all(
-          result.data.map(async (course: any) => {
-            const courseDetail = await api.getCourse(course.id)
-            return courseDetail.success ? courseDetail.data : course
-          })
-        )
-        setCourses(coursesWithTrackers)
-        // Auto-expand all courses
-        setExpandedCourses(new Set(coursesWithTrackers.map(c => c.id)))
+        setCourses(result.data)
+        setExpandedCourses(new Set(result.data.map((c: any) => c.id)))
       }
     } catch (error) {
       console.error('Failed to fetch courses:', error)
@@ -102,7 +96,6 @@ export default function TrackersPage() {
 
           return (
             <div key={course.id} className="bg-card rounded-xl shadow-sm overflow-hidden">
-              {/* Course Header */}
               <button
                 onClick={() => toggleCourse(course.id)}
                 className="w-full p-4 flex items-center justify-between hover:bg-secondary transition-colors"
@@ -133,7 +126,6 @@ export default function TrackersPage() {
                 </Link>
               </button>
 
-              {/* Trackers List */}
               {isExpanded && (
                 <div className="border-t border-border p-4 space-y-4">
                   {trackers.length === 0 ? (
@@ -142,7 +134,6 @@ export default function TrackersPage() {
                     </p>
                   ) : (
                     <>
-                      {/* Attendance Section */}
                       {attendanceTrackers.length > 0 && (
                         <div>
                           <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
@@ -151,12 +142,7 @@ export default function TrackersPage() {
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {attendanceTrackers.map((tracker: any) => {
-                              const recordsCount = tracker._count?.records || 0
-                              const completedCount = tracker.records?.filter((r: any) => 
-                                r.status === 'PRESENT'
-                              ).length || 0
-                              const percentage = calculatePercentage(completedCount, recordsCount)
-
+                              const { completed, total, percentage } = calculatePercentage(tracker.records || [], 'PRESENT')
                               return (
                                 <Link
                                   key={tracker.id}
@@ -168,7 +154,7 @@ export default function TrackersPage() {
                                     <ChevronRight size={16} className="text-muted-foreground" />
                                   </div>
                                   <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                                    <span>{completedCount} / {recordsCount} present</span>
+                                    <span>{completed} / {total} present</span>
                                     <span>{percentage}%</span>
                                   </div>
                                   <div className="h-1.5 bg-background rounded-full overflow-hidden">
@@ -184,7 +170,6 @@ export default function TrackersPage() {
                         </div>
                       )}
 
-                      {/* Assignments Section */}
                       {assignmentTrackers.length > 0 && (
                         <div>
                           <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
@@ -193,12 +178,7 @@ export default function TrackersPage() {
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {assignmentTrackers.map((tracker: any) => {
-                              const recordsCount = tracker._count?.records || 0
-                              const completedCount = tracker.records?.filter((r: any) => 
-                                r.status === 'SUBMITTED'
-                              ).length || 0
-                              const percentage = calculatePercentage(completedCount, recordsCount)
-
+                              const { completed, total, percentage } = calculatePercentage(tracker.records || [], 'SUBMITTED')
                               return (
                                 <Link
                                   key={tracker.id}
@@ -210,7 +190,7 @@ export default function TrackersPage() {
                                     <ChevronRight size={16} className="text-muted-foreground" />
                                   </div>
                                   <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                                    <span>{completedCount} / {recordsCount} submitted</span>
+                                    <span>{completed} / {total} submitted</span>
                                     <span>{percentage}%</span>
                                   </div>
                                   <div className="h-1.5 bg-background rounded-full overflow-hidden">

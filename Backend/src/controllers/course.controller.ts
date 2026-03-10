@@ -6,6 +6,18 @@ export const getCourses = async (req: Request, res: Response) => {
     const courses = await prisma.course.findMany({
       where: { userId: (req.user as any).id },
       include: {
+        trackers: {
+          include: {
+            records: {
+              select: {
+                status: true
+              }
+            },
+            _count: {
+              select: { records: true }
+            }
+          }
+        },
         _count: {
           select: { trackers: true }
         }
@@ -16,7 +28,6 @@ export const getCourses = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: 'Server error' });
   }
 };
-
 export const getCourse = async (req: Request, res: Response) => {
   try {
     const course = await prisma.course.findUnique({
