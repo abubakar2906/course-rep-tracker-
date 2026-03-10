@@ -48,7 +48,7 @@ export default function StudentProfilePage({ params }: { params: Promise<{ id: s
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold">{student.name}</h1>
+        <h1 className="text-2xl font-bold">{student}</h1>
       </div>
 
       <Card className="p-6">
@@ -61,7 +61,7 @@ export default function StudentProfilePage({ params }: { params: Promise<{ id: s
             )}
           </div>
           <div>
-            <h2 className="text-xl font-semibold">{student.name}</h2>
+            <h2 className="text-xl font-semibold">{student}</h2>
             <p className="text-muted-foreground">{student.department}</p>
           </div>
         </div>
