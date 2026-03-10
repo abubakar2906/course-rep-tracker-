@@ -1,27 +1,44 @@
 "use client"
 
-import { use } from "react"
+import { use, useEffect, useState } from "react"
 import { ArrowLeft, User, UserRound } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
-import { notFound } from "next/navigation"
-
-import type { Student } from "@/types/student"
-import { mockStudents } from "@/types/mockData"
-
-const getStudent = (id: number): Student | undefined => {
-  return mockStudents.find(student => student.id === id)
-}
+import { api } from "@/lib/api"
 
 export default function StudentProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  // Properly unwrap params using React.use()
   const resolvedParams = use(params)
-  const student = getStudent(parseInt(resolvedParams.id))
+  const [student, setStudent] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-  if (!student) {
-    notFound()
-  }
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const res = await api.getStudent(resolvedParams.id)
+        if (res.success) {
+          setStudent(res.data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch student:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchStudent()
+  }, [resolvedParams.id])
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <p className="text-muted-foreground">Loading...</p>
+    </div>
+  )
+
+  if (!student) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <p className="text-muted-foreground">Student not found.</p>
+    </div>
+  )
 
   return (
     <div className="space-y-6">
