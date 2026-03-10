@@ -1,18 +1,30 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type React from "react";
 import { Sidebar } from "@/components/sidebar";
 import Navbar from "@/components/navbar";
 import { useAuth } from "@/contexts/AuthContext";
 
-function DashboardContent({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+function DashboardContent({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -22,11 +34,8 @@ function DashboardContent({
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
-
-      <div 
-        className={`min-h-screen flex flex-col transition-all duration-300 ease-in-out
-          ${isCollapsed ? "md:ml-16" : "md:ml-64"}`}
-      >
+      <div className={`min-h-screen flex flex-col transition-all duration-300 ease-in-out
+          ${isCollapsed ? "md:ml-16" : "md:ml-64"}`}>
         <Navbar 
           username={user?.name?.split(' ')[0] || 'User'} 
           setIsMobileMenuOpen={setIsMobileMenuOpen}
@@ -38,10 +47,6 @@ function DashboardContent({
   )
 }
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return <DashboardContent>{children}</DashboardContent>
 }
