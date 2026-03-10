@@ -14,13 +14,13 @@ export const googleCallback = async (req: Request, res: Response) => {
     const token = generateToken(user.id);
 
     // Set token in cookie
-  res.cookie('token', token, {
+ res.cookie('token', token, {
   httpOnly: true,
-  secure: true, // must be true when sameSite is 'none'
-  sameSite: 'none', // ← change this
+  secure: true,
+  sameSite: 'none',
   maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
+  domain: undefined, // don't set domain
+});
     // Redirect to frontend dashboard
     res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
   } catch (error) {
