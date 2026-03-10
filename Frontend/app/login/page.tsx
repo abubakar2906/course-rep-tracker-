@@ -5,8 +5,7 @@ import { Chrome } from "lucide-react"
 
 export default function LoginPage() {
 const handleGoogleLogin = () => {
-  console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
-  window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`;
+  window.location.href = `https://course-rep-production.up.railway.app/api/auth/google`;
 };
 
   return (
