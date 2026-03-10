@@ -4,12 +4,10 @@ import Link from "next/link"
 import { Chrome } from "lucide-react"
 
 export default function LoginPage() {
-  const handleGoogleLogin = () => {
-    // Redirect to backend Google OAuth
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`;
-  };
-
-  
+const handleGoogleLogin = () => {
+  console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
+  window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`;
+};
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-background relative overflow-hidden">
