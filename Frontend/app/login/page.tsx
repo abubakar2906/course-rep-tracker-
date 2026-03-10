@@ -6,7 +6,7 @@ import { Chrome } from "lucide-react"
 export default function LoginPage() {
   const handleGoogleLogin = () => {
     // Redirect to backend Google OAuth
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`;
   };
 
   
