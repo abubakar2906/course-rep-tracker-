@@ -61,7 +61,7 @@ export default function StudentProfilePage({ params }: { params: Promise<{ id: s
             )}
           </div>
           <div>
-            <h2 className="text-xl font-semibold">{student.matricNumber}</h2>
+            <h2 className="text-xl font-semibold">{student.name}</h2>
             <p className="text-muted-foreground">{student.department}</p>
           </div>
         </div>
