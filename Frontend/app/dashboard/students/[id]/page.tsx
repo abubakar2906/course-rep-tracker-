@@ -54,15 +54,15 @@ export default function StudentProfilePage({ params }: { params: Promise<{ id: s
       <Card className="p-6">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center">
-            {student.gender === "male" ? (
+            {student.gender === "MALE" ? (
               <User size={32} className="text-foreground" />
             ) : (
               <UserRound size={32} className="text-foreground" />
             )}
           </div>
           <div>
-            <h2 className="text-xl font-semibold">{student}</h2>
-            <p className="text-muted-foreground">{student.department}</p>
+            <h2 className="text-xl font-semibold">{student.matricNumber}</h2>
+            <p className="text-muted-foreground">Level {student.level}</p>
           </div>
         </div>
 
@@ -72,16 +72,16 @@ export default function StudentProfilePage({ params }: { params: Promise<{ id: s
             <dd className="text-lg font-medium">{student.level}</dd>
           </div>
           <div>
-            <dt className="text-sm text-muted-foreground">Department</dt>
-            <dd className="text-lg font-medium">{student.department}</dd>
-          </div>
-          <div>
             <dt className="text-sm text-muted-foreground">Gender</dt>
             <dd className="text-lg font-medium capitalize">{student.gender}</dd>
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Matric Number</dt>
             <dd className="text-lg font-medium">{student.matricNumber}</dd>
+          </div>
+          <div>
+            <dt className="text-sm text-muted-foreground">Full Name</dt>
+            <dd className="text-lg font-medium">{student.fullName}</dd>
           </div>
         </dl>
       </Card>
