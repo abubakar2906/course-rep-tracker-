@@ -44,10 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = async () => {
-    await api.logout();
-    setUser(null);
-    window.location.href = '/login';
-  };
+  await api.logout();
+  localStorage.removeItem('token');
+  window.location.href = '/login';
+};
 
   const refreshUser = async () => {
     await fetchUser();

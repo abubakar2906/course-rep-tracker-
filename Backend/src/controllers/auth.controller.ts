@@ -12,17 +12,7 @@ export const googleCallback = async (req: Request, res: Response) => {
   try {
     const user = req.user as any;
     const token = generateToken(user.id);
-
-    // Set token in cookie
- res.cookie('token', token, {
-  httpOnly: true,
-  secure: true,
-  sameSite: 'none',
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-  domain: undefined, // don't set domain
-});
-    // Redirect to frontend dashboard
-    res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
+    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
   } catch (error) {
     res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
   }

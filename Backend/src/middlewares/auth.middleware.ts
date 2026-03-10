@@ -4,7 +4,9 @@ import prisma from '../lib/prisma';
 
 export const authorize = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const token = req.cookies.token;
+    const cookieToken = req.cookies.token;
+    const headerToken = req.headers.authorization?.split(' ')[1];
+    const token = cookieToken || headerToken;
 
     if (!token) {
       res.status(401).json({ success: false, error: 'Unauthorized' });
