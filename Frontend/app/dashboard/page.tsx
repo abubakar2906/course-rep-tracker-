@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   ArrowRight,
@@ -11,7 +12,6 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/contexts/AuthContext"
 import { api } from "@/lib/api"
-import OnboardingModal from "@/components/OnboardingModal"
 
 // --- Data Types ---
 type SummaryCardProps = {
@@ -113,15 +113,38 @@ const DashboardSection: React.FC<{ title: string; children: React.ReactNode; cla
 
 // --- Main Dashboard Page Component ---
 export default function DashboardPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [trackers, setTrackers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    checkOnboarding();
   }, []);
+
+  const checkOnboarding = async () => {
+    try {
+      const [studentsRes, coursesRes] = await Promise.all([
+        api.getStudents(),
+        api.getCourses(),
+      ]);
+
+      // If user has no students AND no courses, redirect to onboarding
+      if (studentsRes.success && coursesRes.success) {
+        if (studentsRes.data.length === 0 && coursesRes.data.length === 0) {
+          router.push('/dashboard/onboarding');
+          return;
+        }
+      }
+
+      // Otherwise continue with normal flow
+      fetchData();
+    } catch (error) {
+      console.error('Failed to check onboarding:', error);
+      fetchData();
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -132,9 +155,6 @@ export default function DashboardPage() {
 
       if (studentsRes.success) {
         setStudents(studentsRes.data);
-        if (studentsRes.data.length === 0) {
-          setShowOnboarding(true);
-        }
       }
 
       if (trackersRes.success) {
@@ -145,11 +165,6 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-    fetchData(); // Refresh data
   };
 
   if (loading) {
@@ -199,33 +214,29 @@ export default function DashboardPage() {
     }));
 
   return (
-    <>
-      {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
-      
-      <div className="space-y-6">
-        {/* Summary Cards Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-          {summaryCardsData.map((card) => (
-            <DashboardSummaryCard key={card.title} {...card} />
-          ))}
-        </div>
-
-        {/* Recent Activity Section */}
-        <DashboardSection title="Recent Activity">
-          <div className="space-y-1">
-            {recentActivityData.length > 0 ? (
-              recentActivityData.map((activity, index) => (
-                <React.Fragment key={activity.id}>
-                  <ActivityItem {...activity} />
-                  {index < recentActivityData.length - 1 && <Separator />}
-                </React.Fragment>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
-            )}
-          </div>
-        </DashboardSection>
+    <div className="space-y-6">
+      {/* Summary Cards Section */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+        {summaryCardsData.map((card) => (
+          <DashboardSummaryCard key={card.title} {...card} />
+        ))}
       </div>
-    </>
+
+      {/* Recent Activity Section */}
+      <DashboardSection title="Recent Activity">
+        <div className="space-y-1">
+          {recentActivityData.length > 0 ? (
+            recentActivityData.map((activity, index) => (
+              <React.Fragment key={activity.id}>
+                <ActivityItem {...activity} />
+                {index < recentActivityData.length - 1 && <Separator />}
+              </React.Fragment>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">No recent activity.</p>
+          )}
+        </div>
+      </DashboardSection>
+    </div>
   )
 }
