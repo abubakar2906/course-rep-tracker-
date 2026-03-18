@@ -2,7 +2,7 @@ const getHeaders = () => ({
   'Content-Type': 'application/json',
 });
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE_URL = '/api';
 
 export const api = {
   // Auth
