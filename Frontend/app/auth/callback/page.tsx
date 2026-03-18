@@ -9,18 +9,14 @@ function CallbackHandler() {
 
   useEffect(() => {
     const code = searchParams.get('code');
-    
+
     if (!code) {
       setError('No authentication code received');
       setTimeout(() => router.push('/login'), 2000);
       return;
     }
 
-    // Get base URL without /api
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000';
-
-    // Exchange code for session cookie
-    fetch(`${baseUrl}/api/auth/exchange`, {
+    fetch('/api/auth/exchange', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -29,15 +25,13 @@ function CallbackHandler() {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          console.log('✅ Authentication successful');
           router.push('/dashboard');
         } else {
           setError(data.error || 'Authentication failed');
           setTimeout(() => router.push('/login'), 2000);
         }
       })
-      .catch(err => {
-        console.error('Auth error:', err);
+      .catch(() => {
         setError('Authentication failed');
         setTimeout(() => router.push('/login'), 2000);
       });
