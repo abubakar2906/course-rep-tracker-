@@ -8,22 +8,20 @@ const generateToken = (userId: string) => {
   });
 };
 
-const cookieOptions = () => {
-  const isProd = process.env.NODE_ENV === 'production';
-  return {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? ('none' as const) : ('lax' as const),
-    path: '/',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  };
-};
-
 export const googleCallback = async (req: Request, res: Response) => {
   try {
     const user = req.user as any;
     const token = generateToken(user.id);
-    res.cookie('token', token, cookieOptions());
+    
+    // Set cookie with production-safe settings
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true, // Required for cross-site
+      sameSite: 'none', // Required for cross-site
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    
     res.redirect(`${process.env.FRONTEND_URL}/auth/callback`);
   } catch (error) {
     res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
@@ -56,11 +54,10 @@ export const getMe = async (req: Request, res: Response) => {
 };
 
 export const logout = (req: Request, res: Response) => {
-  const isProd = process.env.NODE_ENV === 'production';
   res.clearCookie('token', { 
     path: '/', 
-    secure: isProd, 
-    sameSite: isProd ? ('none' as const) : ('lax' as const)
+    secure: true,
+    sameSite: 'none'
   });
   res.json({ success: true, message: 'Logged out successfully' });
 };
