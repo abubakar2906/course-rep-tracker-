@@ -25,7 +25,12 @@ const allowedOrigins = (process.env.FRONTEND_URL
 );
 
 app.use(cors({
-  origin: '*', // TEMPORARY - test only
+  origin: (origin, callback) => {
+    // allow non-browser requests (no Origin header)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('CORS: origin not allowed'));
+  },
   credentials: true,
 }));
 
