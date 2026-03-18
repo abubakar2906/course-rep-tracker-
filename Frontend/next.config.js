@@ -1,13 +1,10 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-    async rewrites() {
-        return [
-            {
-                source: '/api/:path*',
-                destination: (process.env.RAILWAY_API_URL || 'http://localhost:8000') + '/api/:path*',
-            },
-        ];
-    },
+module.exports = {
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://course-rep-production.up.railway.app/api/:path*',
+      },
+    ];
+  },
 };
-
-module.exports = nextConfig;
