@@ -16,8 +16,11 @@ function CallbackHandler() {
       return;
     }
 
+    // Get base URL without /api
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000';
+
     // Exchange code for session cookie
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/exchange`, {
+    fetch(`${baseUrl}/api/auth/exchange`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
