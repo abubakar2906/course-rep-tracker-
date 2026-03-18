@@ -1,11 +1,5 @@
-const getToken = () => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token');
-};
-
 const getHeaders = () => ({
   'Content-Type': 'application/json',
-  Authorization: `Bearer ${getToken()}`,
 });
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
@@ -15,6 +9,7 @@ export const api = {
   getMe: async () => {
     const res = await fetch(`${API_BASE_URL}/auth/me`, {
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -23,6 +18,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/auth/logout`, {
       method: 'POST',
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -31,6 +27,7 @@ export const api = {
   getStudents: async () => {
     const res = await fetch(`${API_BASE_URL}/students`, {
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -38,6 +35,7 @@ export const api = {
   getStudent: async (id: string) => {
     const res = await fetch(`${API_BASE_URL}/students/${id}`, {
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -46,6 +44,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/students`, {
       method: 'POST',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     return res.json();
@@ -55,6 +54,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/students/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     return res.json();
@@ -64,6 +64,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/students/${id}`, {
       method: 'DELETE',
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -72,6 +73,7 @@ export const api = {
   getCourses: async () => {
     const res = await fetch(`${API_BASE_URL}/courses`, {
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -79,6 +81,7 @@ export const api = {
   getCourse: async (id: string) => {
     const res = await fetch(`${API_BASE_URL}/courses/${id}`, {
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -87,6 +90,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/courses`, {
       method: 'POST',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     return res.json();
@@ -96,6 +100,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/courses/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     return res.json();
@@ -105,6 +110,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/courses/${id}`, {
       method: 'DELETE',
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -113,6 +119,7 @@ export const api = {
   getTrackers: async () => {
     const res = await fetch(`${API_BASE_URL}/trackers`, {
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -120,6 +127,7 @@ export const api = {
   getTracker: async (id: string) => {
     const res = await fetch(`${API_BASE_URL}/trackers/${id}`, {
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -128,6 +136,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/trackers`, {
       method: 'POST',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     return res.json();
@@ -137,6 +146,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/trackers/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     return res.json();
@@ -146,6 +156,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/trackers/${id}`, {
       method: 'DELETE',
       headers: getHeaders(),
+      credentials: 'include',
     });
     return res.json();
   },
@@ -155,6 +166,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/records/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     return res.json();
@@ -164,6 +176,7 @@ export const api = {
     const res = await fetch(`${API_BASE_URL}/records/bulk`, {
       method: 'PUT',
       headers: getHeaders(),
+      credentials: 'include',
       body: JSON.stringify({ records }),
     });
     return res.json();

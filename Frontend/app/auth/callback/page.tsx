@@ -1,19 +1,17 @@
 'use client';
 import { Suspense, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 
 function CallbackHandler() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      localStorage.setItem('token', token);
-      router.push('/dashboard');
-    } else {
-      router.push('/login');
-    }
+    (async () => {
+      const me = await api.getMe();
+      if (me?.success) router.push('/dashboard');
+      else router.push('/login');
+    })();
   }, []);
 
   return (

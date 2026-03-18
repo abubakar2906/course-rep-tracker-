@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 
+const getUserId = (req: Request) => (req.user as any)?.id as string;
+
 export const getCourses = async (req: Request, res: Response) => {
   try {
+    const userId = getUserId(req);
     const courses = await prisma.course.findMany({
-      where: { userId: (req.user as any).id },
+      where: { userId },
       include: {
         trackers: {
           include: {
@@ -30,8 +33,9 @@ export const getCourses = async (req: Request, res: Response) => {
 };
 export const getCourse = async (req: Request, res: Response) => {
   try {
-    const course = await prisma.course.findUnique({
-      where: { id: req.params.id as string },
+    const userId = getUserId(req);
+    const course = await prisma.course.findFirst({
+      where: { id: req.params.id as string, userId },
       include: {
         trackers: {
           include: {
@@ -56,12 +60,13 @@ export const getCourse = async (req: Request, res: Response) => {
 export const createCourse = async (req: Request, res: Response) => {
   try {
     const { code, name, semester } = req.body;
+    const userId = getUserId(req);
     const course = await prisma.course.create({
       data: {
         code,
         name,
         semester,
-        userId: (req.user as any).id
+        userId
       }
     });
     res.status(201).json({ success: true, data: course });
@@ -77,10 +82,21 @@ export const createCourse = async (req: Request, res: Response) => {
 export const updateCourse = async (req: Request, res: Response) => {
   try {
     const { code, name, semester } = req.body;
-    const course = await prisma.course.update({
-      where: { id: req.params.id as string },
+    const userId = getUserId(req);
+
+    const updated = await prisma.course.updateMany({
+      where: { id: req.params.id as string, userId },
       data: { code, name, semester }
     });
+
+    if (updated.count === 0) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+
+    const course = await prisma.course.findFirst({
+      where: { id: req.params.id as string, userId }
+    });
+
     res.json({ success: true, data: course });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Server error' });
@@ -89,9 +105,10 @@ export const updateCourse = async (req: Request, res: Response) => {
 
 export const deleteCourse = async (req: Request, res: Response) => {
   try {
+    const userId = getUserId(req);
     // Check if course has trackers
-    const course = await prisma.course.findUnique({
-      where: { id: req.params.id as string },
+    const course = await prisma.course.findFirst({
+      where: { id: req.params.id as string, userId },
       include: {
         _count: {
           select: { trackers: true }
@@ -111,8 +128,8 @@ export const deleteCourse = async (req: Request, res: Response) => {
       });
     }
 
-    await prisma.course.delete({
-      where: { id: req.params.id as string }
+    await prisma.course.deleteMany({
+      where: { id: req.params.id as string, userId }
     });
 
     res.json({ success: true, message: 'Course deleted' });
