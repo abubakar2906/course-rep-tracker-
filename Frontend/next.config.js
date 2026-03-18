@@ -1,13 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: process.env.RAILWAY_API_URL + '/api/:path*',
-      },
-    ];
-  },
+    async rewrites() {
+        return [
+            {
+                source: '/api/:path*',
+                destination: (process.env.RAILWAY_API_URL || 'http://localhost:8000') + '/api/:path*',
+            },
+        ];
+    },
 };
 
 module.exports = nextConfig;
