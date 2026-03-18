@@ -13,9 +13,7 @@ const cookieOptions = () => {
   return {
     httpOnly: true,
     secure: isProd,
-    // In prod the frontend/backend are typically on different sites (e.g. Vercel + Railway),
-    // so cross-site API calls require SameSite=None; Secure.
-    sameSite: (isProd ? 'none' : 'lax') as const,
+    sameSite: isProd ? ('none' as const) : ('lax' as const),
     path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   };
@@ -59,6 +57,10 @@ export const getMe = async (req: Request, res: Response) => {
 
 export const logout = (req: Request, res: Response) => {
   const isProd = process.env.NODE_ENV === 'production';
-  res.clearCookie('token', { path: '/', secure: isProd, sameSite: (isProd ? 'none' : 'lax') });
+  res.clearCookie('token', { 
+    path: '/', 
+    secure: isProd, 
+    sameSite: isProd ? ('none' as const) : ('lax' as const)
+  });
   res.json({ success: true, message: 'Logged out successfully' });
 };

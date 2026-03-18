@@ -1,14 +1,14 @@
 export interface User {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  office: string
-  department: string
-  role: string
-  about: string
+  id: string;
+  email: string;
+  name: string;
+  phone?: string;
+  about?: string;
+  department?: string;
+  role?: string;
+  office?: string;
+  createdAt?: string;
 }
-
 // Default user data - in a real app, this would come from authentication/backend
 export const defaultUser: User = {
   firstName: "Sarah",

@@ -7,8 +7,12 @@ interface User {
   id: string;
   email: string;
   name: string;
-  department: string;
-  role: string;
+  phone?: string;
+  about?: string;
+  department?: string;
+  role?: string;
+  office?: string;
+  createdAt?: string;
 }
 
 interface AuthContextType {
