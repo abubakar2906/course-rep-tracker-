@@ -9,6 +9,7 @@ import studentRouter from './routes/student.routes';
 import trackerRouter from './routes/tracker.routes';
 import recordRouter from './routes/record.routes';
 import courseRouter from './routes/course.routes';
+import cohortRouter from './routes/cohort.routes';
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api/auth', authLimiter, authRouter);
 app.use('/api/students', studentRouter);
 app.use('/api/trackers', trackerRouter);
 app.use('/api/courses', courseRouter);
+app.use('/api/cohorts', cohortRouter);
 app.use('/api/records', recordRouter);
 
 // Health check

@@ -1,36 +1,90 @@
 'use client'
+import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { AlertCircle } from "lucide-react"
+import { api } from "@/lib/api"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function RegisterPage() {
+  const router = useRouter()
+  const { refreshUser } = useAuth()
+  
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  })
+  
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+      setError("Please fill in all fields")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const name = `${formData.firstName} ${formData.lastName}`
+      const result = await api.register({
+        name,
+        email: formData.email,
+        password: formData.password
+      })
+
+      if (result.success) {
+        await refreshUser()
+        router.push("/dashboard")
+      } else {
+        setError(result.error || "Registration failed")
+      }
+    } catch (err) {
+      setError("An unexpected error occurred")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-background relative overflow-hidden">
       {/* Abstract background pattern */}
-      <div className="absolute inset-0 opacity-10">
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full -translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary rounded-full translate-x-1/2 translate-y-1/2"></div>
         <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-primary rounded-full -translate-x-1/2 -translate-y-1/2"></div>
       </div>
 
       <div className="w-full max-w-md z-10">
-        <div className="bg-card rounded-2xl shadow-lg p-8">
+        <div className="bg-card rounded-2xl shadow-lg p-8 border border-border/50">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-foreground mb-2">Create Account</h1>
-            <p className="text-muted-foreground">Register as a course representative</p>
+            <p className="text-muted-foreground">Join CourseRep Tracker today</p>
           </div>
 
-          {/* Coming Soon Banner */}
-          <div className="mb-6 p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-800 rounded-lg flex items-start gap-2">
-            <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Coming Soon</p>
-              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                Registration is not yet implemented. Click below to access the dashboard for demo purposes.
-              </p>
+          {error && (
+            <div className="mb-6 p-3 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg flex items-start gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+              <p className="text-sm font-medium text-red-800 dark:text-red-200 flex-1">{error}</p>
             </div>
-          </div>
+          )}
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label htmlFor="firstName" className="text-sm font-medium text-foreground">
@@ -40,8 +94,10 @@ export default function RegisterPage() {
                   id="firstName"
                   type="text"
                   placeholder="John"
-                  disabled
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
                 />
               </div>
               <div className="space-y-2">
@@ -52,8 +108,10 @@ export default function RegisterPage() {
                   id="lastName"
                   type="text"
                   placeholder="Doe"
-                  disabled
-                  className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -66,21 +124,10 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 placeholder="your.email@university.edu"
-                disabled
-                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="department" className="text-sm font-medium text-foreground">
-                Department
-              </label>
-              <input
-                id="department"
-                type="text"
-                placeholder="Computer Science"
-                disabled
-                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
               />
             </div>
 
@@ -92,8 +139,11 @@ export default function RegisterPage() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                disabled
-                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                minLength={6}
+                className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
               />
             </div>
 
@@ -105,8 +155,11 @@ export default function RegisterPage() {
                 id="confirmPassword"
                 type="password"
                 placeholder="••••••••"
-                disabled
-                className="w-full px-4 py-3 rounded-lg border border-border bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                minLength={6}
+                className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
               />
             </div>
 
@@ -114,31 +167,32 @@ export default function RegisterPage() {
               <input
                 id="terms"
                 type="checkbox"
-                disabled
-                className="h-4 w-4 text-primary focus:ring-primary border-border rounded cursor-not-allowed opacity-60"
+                required
+                className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-foreground">
                 I agree to the{" "}
-                <Link href="#" className="text-primary hover:underline pointer-events-none opacity-50">
+                <Link href="#" className="text-primary hover:underline">
                   Terms and Conditions
                 </Link>
               </label>
             </div>
 
             <div>
-              <Link
-                href="/dashboard"
-                className="w-full bg-primary text-primary-foreground font-medium py-3 rounded-lg flex items-center justify-center hover:bg-primary/90 transition"
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-yellow-300 text-gray-800 font-medium py-3 rounded-lg flex items-center justify-center hover:bg-yellow-400 transition disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Continue to Dashboard (Demo)
-              </Link>
+                {loading ? "Creating Account..." : "Create Account"}
+              </button>
             </div>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-muted-foreground text-sm">
               Already have an account?{" "}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link href="/login" className="text-primary hover:underline font-medium">
                 Sign In
               </Link>
             </p>

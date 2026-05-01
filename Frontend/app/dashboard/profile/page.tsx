@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Mail, Phone, MapPin, User, Edit2, Save, X } from "lucide-react"
+import { Mail, Phone, MapPin, User, Edit2, Save, X, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { useAuth } from "@/contexts/AuthContext"
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth()
+  const { user, loading, logout } = useAuth()
   const [isEditing, setIsEditing] = React.useState(false)
 
   const [editedData, setEditedData] = React.useState({
@@ -89,10 +89,16 @@ export default function ProfilePage() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Profile</h1>
         {!isEditing ? (
-          <Button onClick={handleEdit} variant="outline" size="sm">
-            <Edit2 className="h-4 w-4 mr-2" />
-            Edit Profile
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleEdit} variant="outline" size="sm">
+              <Edit2 className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+            <Button onClick={() => logout()} variant="destructive" size="sm">
+              <LogOut className="h-4 w-4 mr-2" />
+              Log Out
+            </Button>
+          </div>
         ) : (
           <div className="flex gap-2">
             <Button onClick={handleCancel} variant="outline" size="sm">

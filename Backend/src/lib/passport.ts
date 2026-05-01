@@ -36,7 +36,7 @@ passport.use(
                 email: profile.emails?.[0]?.value!,
                 name: profile.displayName,
                 department: '',
-                role: 'student',
+                role: 'pending',
               },
             });
           }

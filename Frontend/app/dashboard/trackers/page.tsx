@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Users, FileText, Plus, ChevronRight, ChevronDown } from "lucide-react"
 import { api } from "@/lib/api"
+import { useAuth } from "@/contexts/AuthContext"
 
 function calculatePercentage(records: any[], status: string): { completed: number; total: number; percentage: number } {
   const total = records.length
@@ -13,23 +14,34 @@ function calculatePercentage(records: any[], status: string): { completed: numbe
 }
 
 export default function TrackersPage() {
-  const [courses, setCourses] = useState<any[]>([])
+  const { user } = useAuth()
+  const [coursesWithTrackers, setCoursesWithTrackers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedCourses, setExpandedCourses] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    fetchCourses()
+    fetchData()
   }, [])
 
-  const fetchCourses = async () => {
+  const fetchData = async () => {
     try {
-      const result = await api.getCourses()
-      if (result.success) {
-        setCourses(result.data)
-        setExpandedCourses(new Set(result.data.map((c: any) => c.id)))
+      const [coursesRes, trackersRes] = await Promise.all([
+        api.getCourses(),
+        api.getTrackers()
+      ])
+
+      if (coursesRes.success && trackersRes.success) {
+        // Map courses and attach their trackers
+        const courses = coursesRes.data.map((c: any) => ({
+          ...c,
+          trackers: trackersRes.data.filter((t: any) => t.course.id === c.id)
+        }))
+        
+        setCoursesWithTrackers(courses)
+        setExpandedCourses(new Set(courses.map((c: any) => c.id)))
       }
     } catch (error) {
-      console.error('Failed to fetch courses:', error)
+      console.error('Failed to fetch data:', error)
     } finally {
       setLoading(false)
     }
@@ -55,21 +67,28 @@ export default function TrackersPage() {
     )
   }
 
-  if (courses.length === 0) {
+  if (coursesWithTrackers.length === 0) {
     return (
       <div className="space-y-4 p-1">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Trackers</h1>
         </div>
         <div className="text-center py-12 bg-card rounded-xl shadow-sm">
-          <p className="text-muted-foreground mb-4">No courses yet. Create a course first!</p>
-          <Link
-            href="/dashboard/courses/add"
-            className="inline-flex items-center rounded-lg bg-yellow-300 px-4 py-2 text-gray-800 transition hover:bg-yellow-400"
-          >
-            <Plus className="mr-1" size={18} />
-            Add Course
-          </Link>
+          <p className="text-muted-foreground mb-4">
+            {user?.role === 'student' 
+              ? 'Your cohort has no courses linked yet. Ask your Course Rep.' 
+              : `No courses yet. ${user?.role === 'lecturer' ? 'Create a course first!' : 'Link to a course first!'}`
+            }
+          </p>
+          {user?.role === 'lecturer' && (
+            <Link
+              href="/dashboard/courses/add"
+              className="inline-flex items-center rounded-lg bg-yellow-300 px-4 py-2 text-gray-800 transition hover:bg-yellow-400"
+            >
+              <Plus className="mr-1" size={18} />
+              Add Course
+            </Link>
+          )}
         </div>
       </div>
     )
@@ -88,7 +107,7 @@ export default function TrackersPage() {
       </div>
 
       <div className="space-y-4">
-        {courses.map((course) => {
+        {coursesWithTrackers.map((course) => {
           const isExpanded = expandedCourses.has(course.id)
           const trackers = course.trackers || []
           const attendanceTrackers = trackers.filter((t: any) => t.type === 'ATTENDANCE')
@@ -116,14 +135,16 @@ export default function TrackersPage() {
                     </p>
                   </div>
                 </div>
-                <Link
-                  href={`/dashboard/trackers/add?courseId=${course.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center rounded-lg bg-yellow-300 px-3 py-1.5 text-sm text-gray-800 transition hover:bg-yellow-400"
-                >
-                  <Plus size={16} className="mr-1" />
-                  Add Tracker
-                </Link>
+                {user?.role === 'course_rep' && (
+                  <Link
+                    href={`/dashboard/trackers/add?courseId=${course.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center rounded-lg bg-yellow-300 px-3 py-1.5 text-sm text-gray-800 transition hover:bg-yellow-400"
+                  >
+                    <Plus size={16} className="mr-1" />
+                    Add Tracker
+                  </Link>
+                )}
               </button>
 
               {isExpanded && (

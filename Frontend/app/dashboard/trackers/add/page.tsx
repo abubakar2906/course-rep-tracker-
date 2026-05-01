@@ -19,10 +19,8 @@ export default function AddTrackerPage() {
   
   const [type, setType] = useState<"ATTENDANCE" | "ASSIGNMENT">("ATTENDANCE")
   const [name, setName] = useState("")
-  const [courseId, setCourseId] = useState(preselectedCourseId || "")
-  const [courses, setCourses] = useState<any[]>([])
-  const [students, setStudents] = useState<any[]>([])
-  const [selectedStudents, setSelectedStudents] = useState<string[]>([])
+  const [cohortId, setCohortId] = useState("")
+  const [cohorts, setCohorts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
@@ -32,18 +30,15 @@ export default function AddTrackerPage() {
 
   const fetchData = async () => {
     try {
-      const [coursesRes, studentsRes] = await Promise.all([
-        api.getCourses(),
-        api.getStudents(),
-      ])
+      const cohortsRes = await api.getMyCohorts()
 
-      if (coursesRes.success) {
-        setCourses(coursesRes.data)
-      }
-
-      if (studentsRes.success) {
-        setStudents(studentsRes.data)
-        setSelectedStudents(studentsRes.data.map((s: any) => s.id))
+      if (cohortsRes.success) {
+        setCohorts(cohortsRes.data)
+        
+        // Auto-select cohort if there's only one
+        if (cohortsRes.data.length === 1) {
+          setCohortId(cohortsRes.data[0].id)
+        }
       }
     } catch (error) {
       console.error('Failed to fetch data:', error)
@@ -52,30 +47,32 @@ export default function AddTrackerPage() {
     }
   }
 
-  const toggleStudent = (id: string) => {
-    setSelectedStudents(prev =>
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
-    )
-  }
+  const selectedCohort = cohorts.find(c => c.id === cohortId)
+  const availableCourses = selectedCohort?.courses || []
 
-  const toggleAll = () => {
-    if (selectedStudents.length === students.length) {
-      setSelectedStudents([])
-    } else {
-      setSelectedStudents(students.map(s => s.id))
+  // Auto-select course if preselectedCourseId matches an available course
+  const [courseId, setCourseId] = useState(preselectedCourseId || "")
+  
+  useEffect(() => {
+    if (preselectedCourseId && availableCourses.some((c: any) => c.id === preselectedCourseId)) {
+      setCourseId(preselectedCourseId)
+    } else if (availableCourses.length === 1) {
+      setCourseId(availableCourses[0].id)
+    } else if (!availableCourses.some((c: any) => c.id === courseId)) {
+      setCourseId("")
     }
-  }
+  }, [cohortId, availableCourses, preselectedCourseId])
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     
-    if (!courseId) {
-      alert('Please select a course')
+    if (!cohortId) {
+      alert('Please select a cohort')
       return
     }
 
-    if (selectedStudents.length === 0) {
-      alert('Please select at least one student')
+    if (!courseId) {
+      alert('Please select a course')
       return
     }
 
@@ -85,7 +82,7 @@ export default function AddTrackerPage() {
         name,
         type,
         courseId,
-        studentIds: selectedStudents,
+        cohortId,
       })
 
       if (result.success) {
@@ -108,17 +105,17 @@ export default function AddTrackerPage() {
     )
   }
 
-  if (courses.length === 0) {
+  if (cohorts.length === 0) {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Add New Tracker</h1>
-          <p className="text-muted-foreground">Create a course first to add trackers</p>
+          <p className="text-muted-foreground">Create a cohort first to add trackers</p>
         </div>
         <Card className="p-6 text-center">
-          <p className="text-muted-foreground mb-4">You need to create a course before adding trackers</p>
-          <Button onClick={() => router.push('/dashboard/courses/add')}>
-            Create Course
+          <p className="text-muted-foreground mb-4">You need to have at least one cohort before adding trackers</p>
+          <Button onClick={() => router.push('/dashboard')}>
+            Go to Dashboard
           </Button>
         </Card>
       </div>
@@ -135,13 +132,29 @@ export default function AddTrackerPage() {
       <Card className="p-6">
         <form onSubmit={onSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label>Course *</Label>
-            <Select value={courseId} onValueChange={setCourseId} required disabled={!!preselectedCourseId}>
+            <Label>Cohort *</Label>
+            <Select value={cohortId} onValueChange={setCohortId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Select a course" />
+                <SelectValue placeholder="Select a cohort" />
               </SelectTrigger>
               <SelectContent>
-                {courses.map((course) => (
+                {cohorts.map((cohort) => (
+                  <SelectItem key={cohort.id} value={cohort.id}>
+                    {cohort.program} ({cohort.level.replace('LEVEL_', '')} Level) - {cohort.department}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Course *</Label>
+            <Select value={courseId} onValueChange={setCourseId} required disabled={!cohortId || availableCourses.length === 0 || !!preselectedCourseId}>
+              <SelectTrigger>
+                <SelectValue placeholder={!cohortId ? "Select a cohort first" : availableCourses.length === 0 ? "No courses linked to this cohort" : "Select a course"} />
+              </SelectTrigger>
+              <SelectContent>
+                {availableCourses.map((course: any) => (
                   <SelectItem key={course.id} value={course.id}>
                     {course.code} - {course.name}
                   </SelectItem>
@@ -180,36 +193,7 @@ export default function AddTrackerPage() {
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Select Students</Label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={toggleAll}
-              >
-                {selectedStudents.length === students.length ? 'Deselect All' : 'Select All'}
-              </Button>
-            </div>
-            <div className="border rounded-lg p-4 max-h-64 overflow-y-auto">
-              {students.map((student) => (
-                <div key={student.id} className="flex items-center space-x-2 py-2">
-                  <Checkbox
-                    id={student.id}
-                    checked={selectedStudents.includes(student.id)}
-                    onCheckedChange={() => toggleStudent(student.id)}
-                  />
-                  <label htmlFor={student.id} className="text-sm cursor-pointer">
-                    {student.fullName} ({student.matricNumber})
-                  </label>
-                </div>
-              ))}
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {selectedStudents.length} of {students.length} students selected
-            </p>
-          </div>
+
 
           <div className="flex gap-4">
             <Button

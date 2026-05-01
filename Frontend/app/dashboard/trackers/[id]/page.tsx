@@ -8,10 +8,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { notFound, useRouter } from "next/navigation"
 import { api } from "@/lib/api"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function TrackerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = React.use(params)
   const router = useRouter()
+  const { user } = useAuth()
   const [tracker, setTracker] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(true)
   const [saving, setSaving] = React.useState(false)
@@ -175,11 +177,12 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
                       checked={isMarked}
                       onCheckedChange={() => handleToggleStudent(record.id, recordStates[record.id])}
                       id={`record-${record.id}`}
+                      disabled={user?.role === 'lecturer' || user?.role === 'student'}
                     />
                     <div>
                       <label
                         htmlFor={`record-${record.id}`}
-                        className="font-medium cursor-pointer"
+                        className={`font-medium ${user?.role === 'lecturer' || user?.role === 'student' ? '' : 'cursor-pointer'}`}
                       >
                         {record.student.fullName}
                       </label>
@@ -205,15 +208,17 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           {/* Save Button */}
-          <div className="mt-6 flex justify-end">
-            <Button
-              className="w-full sm:w-auto"
-              onClick={handleSaveChanges}
-              disabled={saving}
-            >
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
+          {user?.role !== 'lecturer' && user?.role !== 'student' && (
+            <div className="mt-6 flex justify-end">
+              <Button
+                className="w-full sm:w-auto"
+                onClick={handleSaveChanges}
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          )}
         </div>
       </Card>
     </div>

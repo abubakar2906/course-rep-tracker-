@@ -11,8 +11,10 @@ interface Student {
   id: string
   fullName: string
   matricNumber: string
-  level: string
   gender: string
+  cohort?: {
+    level: string
+  }
 }
 
 interface StudentCardProps {
@@ -39,7 +41,7 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) => {
         <div className="flex items-center text-sm text-muted-foreground flex-wrap">
           <span className="mr-2 whitespace-nowrap">{student.matricNumber}</span>
           <span className="w-1 h-1 bg-muted-foreground rounded-full mx-2 hidden sm:inline-block"></span>
-          <span className="ml-0 md:ml-2 whitespace-nowrap">{student.level.replace('LEVEL_', '')} Level</span>
+          <span className="ml-0 md:ml-2 whitespace-nowrap">{student.cohort?.level?.replace('LEVEL_', '') || 'Unknown'} Level</span>
         </div>
       </div>
 
@@ -51,13 +53,26 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) => {
 export default function StudentsPage() {
   const router = useRouter()
   const [students, setStudents] = useState<Student[]>([])
+  const [cohorts, setCohorts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
     fetchStudents()
+    fetchCohorts()
   }, [])
+
+  const fetchCohorts = async () => {
+    try {
+      const result = await api.getMyCohorts()
+      if (result.success) {
+        setCohorts(result.data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch cohorts:', error)
+    }
+  }
 
   const fetchStudents = async () => {
     try {
@@ -88,8 +103,10 @@ export default function StudentsPage() {
     try {
       const result = await api.createStudent(newStudent)
       if (result.success) {
-        setStudents([...students, result.data])
+        await fetchStudents()
         setIsAddModalOpen(false)
+      } else {
+        alert(result.error || 'Failed to add student')
       }
     } catch (error) {
       alert('Failed to add student')
@@ -159,6 +176,7 @@ export default function StudentsPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddStudent}
+        cohorts={cohorts}
       />
     </div>
   )

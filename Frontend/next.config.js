@@ -3,7 +3,7 @@ module.exports = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://course-rep-production.up.railway.app/api/:path*',
+        destination: 'http://localhost:5000/api/:path*',
       },
     ];
   },

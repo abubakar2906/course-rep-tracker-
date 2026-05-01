@@ -62,14 +62,14 @@ export default function StudentProfilePage({ params }: { params: Promise<{ id: s
           </div>
           <div>
             <h2 className="text-xl font-semibold">{student.fullName}</h2>
-            <p className="text-muted-foreground">{student.department}</p>
+            <p className="text-muted-foreground">{student.cohort?.department || 'Unknown Department'}</p>
           </div>
         </div>
 
         <dl className="grid gap-4 sm:grid-cols-2">
           <div>
             <dt className="text-sm text-muted-foreground">Level</dt>
-            <dd className="text-lg font-medium">{student.level}</dd>
+            <dd className="text-lg font-medium">{student.cohort?.level?.replace('LEVEL_', '') || 'Unknown'} Level</dd>
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Gender</dt>

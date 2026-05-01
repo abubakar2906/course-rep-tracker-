@@ -9,9 +9,11 @@ interface User {
   name: string;
   phone?: string;
   about?: string;
+  faculty?: string;
   department?: string;
   role?: string;
   office?: string;
+  matricNumber?: string;
   createdAt?: string;
 }
 

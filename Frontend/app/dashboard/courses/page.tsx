@@ -5,8 +5,10 @@ import Link from "next/link"
 import { BookOpen, Plus, ChevronRight, Trash2, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { api } from "@/lib/api"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function CoursesPage() {
+  const { user } = useAuth()
   const [courses, setCourses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -57,7 +59,7 @@ export default function CoursesPage() {
         <Link href="/dashboard/courses/add">
           <Button className="bg-yellow-300 text-gray-800 hover:bg-yellow-400">
             <Plus size={18} className="mr-1" />
-            Add Course
+            {user?.role === 'lecturer' ? 'Add Course' : 'Link Course'}
           </Button>
         </Link>
       </div>
@@ -65,7 +67,9 @@ export default function CoursesPage() {
       {courses.length === 0 ? (
         <div className="text-center py-12 bg-card rounded-xl shadow-sm">
           <BookOpen size={48} className="mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">No courses yet. Create your first one!</p>
+          <p className="text-muted-foreground">
+            {user?.role === 'lecturer' ? 'No courses yet. Create your first one!' : 'No courses yet. Link a course to your cohort!'}
+          </p>
         </div>
       ) : (
         <div className="bg-card rounded-xl shadow-sm overflow-hidden">
@@ -92,13 +96,15 @@ export default function CoursesPage() {
                       <ChevronRight size={16} />
                     </Button>
                   </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(course.id, `${course.code} - ${course.name}`)}
-                  >
-                    <Trash2 size={16} className="text-red-500" />
-                  </Button>
+                  {user?.role === 'lecturer' && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(course.id, `${course.code} - ${course.name}`)}
+                    >
+                      <Trash2 size={16} className="text-red-500" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

@@ -12,6 +12,7 @@ interface AddStudentModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (student: any) => void
+  cohorts: any[]
 }
 
 const levels = [
@@ -22,11 +23,11 @@ const levels = [
   { value: "LEVEL_500", label: "500" },
 ]
 
-export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalProps) {
+export function AddStudentModal({ isOpen, onClose, onSubmit, cohorts }: AddStudentModalProps) {
   const [formData, setFormData] = useState({
     fullName: "",
     matricNumber: "",
-    level: "LEVEL_100",
+    cohortId: "",
     gender: "MALE",
   })
 
@@ -36,7 +37,7 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
     setFormData({
       fullName: "",
       matricNumber: "",
-      level: "LEVEL_100",
+      cohortId: "",
       gender: "MALE",
     })
   }
@@ -70,19 +71,19 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="level">Level</Label>
+            <Label htmlFor="cohort">Cohort</Label>
             <Select
-              value={formData.level}
-              onValueChange={(value) => setFormData({ ...formData, level: value })}
+              value={formData.cohortId}
+              onValueChange={(value) => setFormData({ ...formData, cohortId: value })}
               required
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select level" />
+                <SelectValue placeholder="Select cohort" />
               </SelectTrigger>
               <SelectContent>
-                {levels.map((level) => (
-                  <SelectItem key={level.value} value={level.value}>
-                    {level.label} Level
+                {cohorts.map((cohort) => (
+                  <SelectItem key={cohort.id} value={cohort.id}>
+                    {cohort.program} ({cohort.level.replace('LEVEL_', '')} Level)
                   </SelectItem>
                 ))}
               </SelectContent>

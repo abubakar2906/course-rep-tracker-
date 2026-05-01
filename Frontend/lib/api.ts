@@ -23,7 +23,92 @@ export const api = {
     return res.json();
   },
 
+  login: async (data: any) => {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  register: async (data: any) => {
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  updateProfile: async (data: any) => {
+    const res = await fetch(`${API_BASE_URL}/auth/profile`, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  // Cohorts
+  createCohort: async (data: any) => {
+    const res = await fetch(`${API_BASE_URL}/cohorts`, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  getMyCohorts: async () => {
+    const res = await fetch(`${API_BASE_URL}/cohorts/mine`, {
+      headers: getHeaders(),
+      credentials: 'include',
+    });
+    return res.json();
+  },
+
+  getAllCohorts: async () => {
+    const res = await fetch(`${API_BASE_URL}/cohorts`, {
+      headers: getHeaders(),
+      credentials: 'include',
+    });
+    return res.json();
+  },
+
+  joinCohort: async (cohortId: string) => {
+    const res = await fetch(`${API_BASE_URL}/cohorts/join`, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ cohortId }),
+    });
+    return res.json();
+  },
+
+  linkCourseToCohort: async (cohortId: string, courseId: string) => {
+    const res = await fetch(`${API_BASE_URL}/cohorts/${cohortId}/courses`, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ courseId }),
+    });
+    return res.json();
+  },
+
   // Students
+  getMyDashboardData: async () => {
+    const res = await fetch(`${API_BASE_URL}/students/me/dashboard`, {
+      headers: getHeaders(),
+      credentials: 'include',
+    });
+    return res.json();
+  },
+
   getStudents: async () => {
     const res = await fetch(`${API_BASE_URL}/students`, {
       headers: getHeaders(),
@@ -86,12 +171,30 @@ export const api = {
     return res.json();
   },
 
+  findCourseByCode: async (code: string) => {
+    const res = await fetch(`${API_BASE_URL}/courses/search/${encodeURIComponent(code)}`, {
+      headers: getHeaders(),
+      credentials: 'include',
+    });
+    return res.json();
+  },
+
   createCourse: async (data: any) => {
     const res = await fetch(`${API_BASE_URL}/courses`, {
       method: 'POST',
       headers: getHeaders(),
       credentials: 'include',
       body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  createCourseUpdate: async (courseId: string, content: string) => {
+    const res = await fetch(`${API_BASE_URL}/courses/${courseId}/updates`, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ content }),
     });
     return res.json();
   },

@@ -38,7 +38,7 @@ export default function LandingPage() {
           </p>
           <Link href="/login">
             <Button size="lg" className="bg-yellow-300 text-gray-800 hover:bg-yellow-400 text-lg px-8 py-6">
-              Login with Google
+              Login
               <ArrowRight className="ml-2" size={20} />
             </Button>
           </Link>
@@ -97,7 +97,7 @@ export default function LandingPage() {
           </p>
           <Link href="/login">
             <Button size="lg" className="bg-yellow-300 text-gray-800 hover:bg-yellow-400 text-lg px-8 py-6">
-              Login with Google
+              Login
               <ArrowRight className="ml-2" size={20} />
             </Button>
           </Link>

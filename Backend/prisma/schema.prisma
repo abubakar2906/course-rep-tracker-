@@ -12,60 +12,111 @@ datasource db {
 }
 
 model User {
-  id         String    @id @default(cuid())
-  email      String    @unique
-  password   String?   // Optional for OAuth users
-  name       String
-  phone      String?   @unique
-  about      String?
-  department String
-  role       String
-  office     String?
-  googleId   String?   @unique // For Google OAuth
-  students   Student[]
-  trackers   Tracker[]
-  courses    Course[]   // ADD THIS LINE
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  email        String    @unique
+  password     String?
+  name         String
+  phone        String?   @unique
+  about        String?
+  faculty      String?
+  department   String?
+  role         String
+  office       String?
+  matricNumber String?   @unique
+  googleId     String?   @unique
+  
+  studentProfile Student?
+  managedCohorts Cohort[]  @relation("RepCohorts")
+  taughtCourses  Course[]  @relation("LecturerCourses")
+  trackers       Tracker[]
+  updates        CourseUpdate[]
+  joinedCohort   Cohort?   @relation("CohortViewers", fields: [joinedCohortId], references: [id])
+  joinedCohortId String?
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Cohort {
+  id          String    @id @default(cuid())
+  faculty     String
+  department  String
+  program     String
+  level       Level
+  
+  courseRepId String
+  courseRep   User      @relation("RepCohorts", fields: [courseRepId], references: [id])
+  
+  students    Student[]
+  courses     Course[]  @relation("CohortCourses")
+  trackers    Tracker[]
+  viewers     User[]    @relation("CohortViewers")
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@unique([program, level, department])
 }
 
 model Student {
   id           String          @id @default(cuid())
-  userId       String
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String?         @unique
+  user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cohortId     String
+  cohort       Cohort          @relation(fields: [cohortId], references: [id], onDelete: Cascade)
   fullName     String
   matricNumber String          @unique
-  level        Level           // 100, 200, 300, 400, or 500
   gender       Gender
-  records      TrackerRecord[] // Attendance/assignment records for this student
+  records      TrackerRecord[]
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 }
 
 model Course {
-  id        String    @id @default(cuid())
-  code      String    // CSC 101
-  name      String    // Introduction to Computer Science
-  semester  String?   // Fall 2024
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  trackers  Tracker[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id          String         @id @default(cuid())
+  code        String         @unique
+  name        String
+  semester    String?
+  
+  lecturerId  String
+  lecturer    User           @relation("LecturerCourses", fields: [lecturerId], references: [id])
+  
+  cohorts     Cohort[]       @relation("CohortCourses")
+  trackers    Tracker[]
+  updates     CourseUpdate[]
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
 
-  @@unique([userId, code]) // Same user can't have duplicate course codes
+model CourseUpdate {
+  id        String   @id @default(cuid())
+  content   String
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Tracker {
   id        String          @id @default(cuid())
-  name      String          // "Week 1 Lecture", "Assignment 1"
-  type      TrackerType     // ATTENDANCE or ASSIGNMENT
-  courseId  String          // NEW: Link to course
+  name      String
+  type      TrackerType
+  date      DateTime        @default(now())
+  
+  courseId  String
   course    Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  cohortId  String
+  cohort    Cohort          @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  
   userId    String
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date      DateTime        @default(now())
+  
   records   TrackerRecord[]
+  
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 }
@@ -76,12 +127,12 @@ model TrackerRecord {
   tracker   Tracker      @relation(fields: [trackerId], references: [id], onDelete: Cascade)
   studentId String
   student   Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  status    RecordStatus // PRESENT, ABSENT, SUBMITTED, NOT_SUBMITTED
-  notes     String?      // Optional notes
+  status    RecordStatus
+  notes     String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  @@unique([trackerId, studentId]) // Each student appears once per tracker
+  @@unique([trackerId, studentId])
 }
 
 enum Level {
