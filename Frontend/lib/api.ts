@@ -2,7 +2,9 @@ const getHeaders = () => ({
   'Content-Type': 'application/json',
 });
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE_URL = typeof window !== 'undefined' 
+  ? '/api' 
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api');
 
 export const api = {
   // Auth
