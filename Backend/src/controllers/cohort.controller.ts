@@ -42,10 +42,15 @@ export const createCohort = async (req: Request, res: Response) => {
 export const getMyCohorts = async (req: Request, res: Response) => {
   try {
     const userId = getUserId(req);
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { joinedCohortId: true } });
     
-    // Fetch cohorts managed by this rep
     const cohorts = await prisma.cohort.findMany({
-      where: { courseRepId: userId },
+      where: {
+        OR: [
+          { courseRepId: userId },
+          ...(user?.joinedCohortId ? [{ id: user.joinedCohortId }] : [])
+        ]
+      },
       include: {
         courses: true,
         _count: {

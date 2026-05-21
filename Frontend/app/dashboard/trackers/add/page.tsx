@@ -8,7 +8,6 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { api } from "@/lib/api"
 
@@ -72,7 +71,7 @@ export default function AddTrackerPage() {
     }
 
     if (!courseId) {
-      alert('Please select a course')
+      alert(availableCourses.length === 0 ? 'No courses are linked to this cohort yet. Link a course before creating a tracker.' : 'Please select a course')
       return
     }
 

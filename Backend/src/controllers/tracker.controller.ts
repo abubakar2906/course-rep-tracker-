@@ -22,8 +22,15 @@ export const getTrackers = async (req: Request, res: Response) => {
                 orderBy: { date: 'desc' }
             });
         } else if (user.role === 'course_rep') {
+            const fullUser = await prisma.user.findUnique({ where: { id: userId }, select: { joinedCohortId: true } });
+            const joinedCohortId = fullUser?.joinedCohortId || undefined;
             trackers = await prisma.tracker.findMany({
-                where: { cohort: { courseRepId: userId } },
+                where: {
+                    OR: [
+                        { cohort: { courseRepId: userId } },
+                        ...(joinedCohortId ? [{ cohortId: joinedCohortId }] : [])
+                    ]
+                },
                 include: {
                     course: { select: { code: true, name: true, id: true } },
                     cohort: { select: { program: true, level: true } },
@@ -79,8 +86,16 @@ export const createTracker = async (req: Request, res: Response) => {
     try {
         const { name, type, courseId, cohortId, date } = req.body;
         const userId = getUserId(req);
+        const user = await prisma.user.findUnique({ where: { id: userId }, select: { joinedCohortId: true } });
+        const joinedCohortId = user?.joinedCohortId || undefined;
         const cohort = await prisma.cohort.findFirst({
-            where: { id: cohortId as string, courseRepId: userId },
+            where: {
+                id: cohortId as string,
+                OR: [
+                    { courseRepId: userId },
+                    ...(joinedCohortId === cohortId ? [{ id: joinedCohortId }] : [])
+                ]
+            },
             include: { students: { select: { id: true } } }
         });
         if (!cohort) return res.status(403).json({ success: false, error: 'Not authorized for this cohort' });
