@@ -4,8 +4,8 @@ import "./globals.css"
 import { AuthProvider } from "@/contexts/AuthContext"
 
 export const metadata: Metadata = {
-  title: "Course Rep Tracker",
-  description: "Track student attendance, fees, and complaints",
+  title: "CourseFlow",
+  description: "The unified hub for your academic journey",
   generator: 'v0.dev'
 }
 

@@ -71,9 +71,9 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <BookOpenCheck className="h-16 w-16 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">CourseRep Tracker</h1>
-          <p className="text-muted-foreground">
-            Sign in to manage your students and trackers
+          <h1 className="text-3xl font-bold mb-2">CourseFlow</h1>
+          <p className="text-muted-foreground mb-8">
+            Sign in to manage your courses and trackers
           </p>
         </div>
 

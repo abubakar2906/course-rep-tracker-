@@ -73,8 +73,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-md z-10">
         <div className="bg-card rounded-2xl shadow-lg p-8 border border-border/50">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground mb-2">Create Account</h1>
-            <p className="text-muted-foreground">Join CourseRep Tracker today</p>
+            <h1 className="text-3xl font-bold mb-2">Create an Account</h1>
+            <p className="text-muted-foreground mb-8">Join CourseFlow today</p>
           </div>
 
           {error && (
