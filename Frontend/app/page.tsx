@@ -334,10 +334,10 @@ export default function LandingPage() {
             </h2>
           </BentoCell>
 
-          {/* row 1 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* rows 1+2 unified — required for row-span-2 to work across both rows */}
+          <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-4 mb-4">
 
-            {/* Wide card */}
+            {/* Wide top card — col-span-2, row 1 */}
             <BentoCell delay={0} className="md:col-span-2">
               <TiltCard className="h-full">
                 <div className="bg-card border border-border rounded-2xl p-7 h-full min-h-[220px] flex flex-col justify-between group hover:border-yellow-400/30 transition-colors duration-300">
@@ -350,7 +350,6 @@ export default function LandingPage() {
                       Open a session, flip toggles, done. Every record is timestamped, stored, and retrievable — no paper, no chaos.
                     </p>
                   </div>
-                  {/* inline mini-ui */}
                   <div className="flex gap-2 mt-6">
                     {["Present", "Absent", "Late"].map((s, i) => (
                       <span key={s} className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border ${
@@ -364,10 +363,10 @@ export default function LandingPage() {
               </TiltCard>
             </BentoCell>
 
-            {/* Tall role card */}
+            {/* Tall role card — col-span-1, row-span-2 */}
             <BentoCell delay={0.07} className="md:row-span-2">
               <TiltCard className="h-full">
-                <div className="bg-card border border-border rounded-2xl p-7 h-full min-h-[460px] flex flex-col gap-6 hover:border-border/80 transition-colors duration-300">
+                <div className="bg-card border border-border rounded-2xl p-7 h-full flex flex-col gap-6 hover:border-border/80 transition-colors duration-300">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-4">Who it's for</p>
                     <p className="text-2xl font-bold text-foreground leading-snug">3 roles.<br />One platform.</p>
@@ -402,10 +401,8 @@ export default function LandingPage() {
                 </div>
               </TiltCard>
             </BentoCell>
-          </div>
 
-          {/* row 2 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Two smaller cards — col-span-2, row 2 — sit directly below the wide card */}
             <BentoCell delay={0.1} className="md:col-span-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
                 {[
@@ -428,7 +425,7 @@ export default function LandingPage() {
                 ))}
               </div>
             </BentoCell>
-            {/* spacer for the tall card above */}
+
           </div>
 
           {/* row 3: full-width stat strip */}
