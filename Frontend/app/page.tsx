@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { BookOpenCheck, Users, FileText, BookOpen, BarChart3, ArrowRight, GraduationCap, Presentation, Sparkles } from "lucide-react"
+import { BookOpenCheck, Users, FileText, BookOpen, BarChart3, ArrowRight, GraduationCap, Presentation, Sparkles, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
