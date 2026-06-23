@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Users, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -47,7 +47,7 @@ export default function AddTrackerPage() {
   }
 
   const selectedCohort = cohorts.find(c => c.id === cohortId)
-  const availableCourses = React.useMemo(() => selectedCohort?.courses || [], [selectedCohort])
+  const availableCourses = useMemo(() => selectedCohort?.courses || [], [selectedCohort])
 
   // Auto-select course if preselectedCourseId matches an available course
   const [courseId, setCourseId] = useState(preselectedCourseId || "")
