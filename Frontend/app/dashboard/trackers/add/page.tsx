@@ -47,7 +47,7 @@ export default function AddTrackerPage() {
   }
 
   const selectedCohort = cohorts.find(c => c.id === cohortId)
-  const availableCourses = selectedCohort?.courses || []
+  const availableCourses = React.useMemo(() => selectedCohort?.courses || [], [selectedCohort])
 
   // Auto-select course if preselectedCourseId matches an available course
   const [courseId, setCourseId] = useState(preselectedCourseId || "")
@@ -57,10 +57,10 @@ export default function AddTrackerPage() {
       setCourseId(preselectedCourseId)
     } else if (availableCourses.length === 1) {
       setCourseId(availableCourses[0].id)
-    } else if (!availableCourses.some((c: any) => c.id === courseId)) {
+    } else if (courseId && !availableCourses.some((c: any) => c.id === courseId)) {
       setCourseId("")
     }
-  }, [cohortId, availableCourses, preselectedCourseId])
+  }, [cohortId, availableCourses, preselectedCourseId, courseId])
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -132,7 +132,7 @@ export default function AddTrackerPage() {
         <form onSubmit={onSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label>Cohort *</Label>
-            <Select value={cohortId} onValueChange={setCohortId} required>
+            <Select value={cohortId || undefined} onValueChange={setCohortId} required>
               <SelectTrigger>
                 <SelectValue placeholder="Select a cohort" />
               </SelectTrigger>
@@ -148,7 +148,7 @@ export default function AddTrackerPage() {
 
           <div className="space-y-2">
             <Label>Course *</Label>
-            <Select value={courseId} onValueChange={setCourseId} required disabled={!cohortId || availableCourses.length === 0 || !!preselectedCourseId}>
+            <Select value={courseId || undefined} onValueChange={setCourseId} required disabled={!cohortId || availableCourses.length === 0 || !!preselectedCourseId}>
               <SelectTrigger>
                 <SelectValue placeholder={!cohortId ? "Select a cohort first" : availableCourses.length === 0 ? "No courses linked to this cohort" : "Select a course"} />
               </SelectTrigger>
